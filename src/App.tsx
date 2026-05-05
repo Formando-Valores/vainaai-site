@@ -266,7 +266,7 @@ function HomePage({ setCurrentPage }: { setCurrentPage: (page: Page) => void }) 
     <div
       className="relative min-h-screen"
       style={{
-        backgroundImage: 'url(/background-left.svg), url(/background-right.svg)',
+        backgroundImage: 'url(/hero-left-original.jpeg), url(/hero-right-original.jpeg)',
         backgroundSize: '50% auto, 50% auto',
         backgroundPosition: 'left center, right center',
         backgroundRepeat: 'no-repeat, no-repeat'
