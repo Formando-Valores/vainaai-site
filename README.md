@@ -84,3 +84,6 @@ Foram criados placeholders em SVG para substituir o Convex Storage:
 - `/public/background-right.svg`
 
 Substitua esses arquivos pelos assets oficiais quando tiver as imagens originais.
+
+---
+*Teste de validação de PR e deploy na Vercel*
