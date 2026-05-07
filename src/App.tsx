@@ -263,15 +263,7 @@ function PageContent({ currentPage, setCurrentPage }: { currentPage: Page; setCu
 
 function HomePage({ setCurrentPage }: { setCurrentPage: (page: Page) => void }) {
   return (
-    <div
-      className="relative min-h-screen"
-      style={{
-        backgroundImage: 'url(/hero-left-original.jpeg), url(/hero-right-original.jpeg)',
-        backgroundSize: '50% auto, 50% auto',
-        backgroundPosition: 'left center, right center',
-        backgroundRepeat: 'no-repeat, no-repeat'
-      }}
-    >
+    <div className="relative min-h-screen home-hero-bg">
       {/* Dark overlay for better text readability */}
       <div className="absolute inset-0 bg-black/40"></div>
       {/* Hero Section */}
