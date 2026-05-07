@@ -47,3 +47,39 @@ body {
   text-align: justify;
   text-justify: inter-word;
 }
+
+
+.home-hero-bg {
+  background-image: url("/hero-left-original.jpeg"), url("/hero-right-original.jpeg");
+  background-repeat: no-repeat, no-repeat;
+  background-size: 54% auto, 54% auto;
+  background-position: -7% 50%, 107% 50%;
+}
+
+@media (max-width: 1919px) {
+  .home-hero-bg {
+    background-size: 56% auto, 56% auto;
+    background-position: -10% 50%, 110% 50%;
+  }
+}
+
+@media (max-width: 1535px) {
+  .home-hero-bg {
+    background-size: 60% auto, 60% auto;
+    background-position: -16% 50%, 116% 50%;
+  }
+}
+
+@media (max-width: 1279px) {
+  .home-hero-bg {
+    background-size: cover, cover;
+    background-position: 18% 50%, 82% 50%;
+  }
+}
+
+@media (max-width: 767px) {
+  .home-hero-bg {
+    background-size: cover, cover;
+    background-position: 30% 50%, 70% 50%;
+  }
+}
