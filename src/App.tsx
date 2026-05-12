@@ -268,59 +268,38 @@ function HomePage({ setCurrentPage }: { setCurrentPage: (page: Page) => void }) 
       <div className="absolute inset-0 bg-black/40"></div>
       {/* Hero Section */}
       <section className="text-white py-20 relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="mb-8">
-            <Logo size="w-48 h-48" className="mx-auto mb-8" />
-            <h1 
-              className="text-8xl font-black mb-6" 
-              style={{ 
-                fontFamily: 'Impact, "Arial Black", sans-serif',
-                color: '#87ceeb',
-                textShadow: '3px 3px 0px #000, -1px -1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000, 1px 1px 0px #000',
-                WebkitTextStroke: '2px #000'
-              }}
-            >
-              AI
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto text-center bg-gray-900/35 backdrop-blur-sm border border-sky-300/30 rounded-2xl p-8 sm:p-12 shadow-2xl">
+            <Logo size="w-24 h-24" className="mx-auto mb-6" />
+            <h1 className="text-4xl sm:text-5xl font-extrabold leading-tight mb-4 text-sky-100">
+              Apoio jurídico e defesa dos seus direitos de forma acessível
             </h1>
-            <p 
-              className="text-4xl font-black" 
-              style={{ 
-                fontFamily: 'Impact, "Arial Black", sans-serif',
-                color: '#87ceeb',
-                textShadow: '2px 2px 0px #000, -1px -1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000, 1px 1px 0px #000',
-                WebkitTextStroke: '1px #000'
-              }}
-            >
-              Unidos contra as Injustiças
+            <p className="text-lg sm:text-xl text-sky-100/90 mb-8">
+              Atuação em Portugal e na União Europeia com orientação, denúncia e acompanhamento em casos de injustiça.
             </p>
-          </div>
-          
-          <p className="text-xl mb-12 max-w-3xl mx-auto bg-white/10 backdrop-blur-sm rounded-lg p-6 text-sky-100 shadow-lg border-2 border-blue-900 text-justified">
-            Defendemos os direitos dos cidadãos e promovemos a justiça social através de ações concretas e transparentes.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <button
-              onClick={() => setCurrentPage('join')}
-              className="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors flex items-center space-x-2"
-            >
-              <UserPlus className="w-5 h-5" />
-              <span>👉 Associe-se</span>
-            </button>
-            <button
-              onClick={() => setCurrentPage('report')}
-              className="bg-red-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-red-700 transition-colors flex items-center space-x-2"
-            >
-              <AlertTriangle className="w-5 h-5" />
-              <span>👉 Denuncie as ilegalidades</span>
-            </button>
-            <button
-              onClick={() => setCurrentPage('contact')}
-              className="bg-green-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
-            >
-              <MessageSquare className="w-5 h-5" />
-              <span>👉 Precisa de ajuda? Contacte-nos</span>
-            </button>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
+              <button
+                onClick={() => setCurrentPage('contact')}
+                className="w-full sm:w-auto bg-sky-500 text-white px-10 py-4 rounded-lg font-bold text-lg hover:bg-sky-400 transition-colors flex items-center justify-center space-x-2 shadow-lg"
+              >
+                <MessageSquare className="w-5 h-5" />
+                <span>Pedir Apoio Agora</span>
+              </button>
+              <button
+                onClick={() => setCurrentPage('report')}
+                className="w-full sm:w-auto bg-red-600/95 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-red-700 transition-colors flex items-center justify-center space-x-2"
+              >
+                <AlertTriangle className="w-5 h-5" />
+                <span>Fazer Denúncia</span>
+              </button>
+            </div>
+
+            <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-3 text-sm sm:text-base text-sky-100">
+              <span className="bg-white/15 px-3 py-1.5 rounded-full border border-white/20">Atendimento confidencial</span>
+              <span className="bg-white/15 px-3 py-1.5 rounded-full border border-white/20">Orientação inicial sem custo</span>
+              <span className="bg-white/15 px-3 py-1.5 rounded-full border border-white/20">Resposta em até 48 horas úteis</span>
+            </div>
           </div>
         </div>
       </section>
