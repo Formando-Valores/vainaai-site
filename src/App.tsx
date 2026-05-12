@@ -262,67 +262,32 @@ function PageContent({ currentPage, setCurrentPage }: { currentPage: Page; setCu
 }
 
 function HomePage({ setCurrentPage }: { setCurrentPage: (page: Page) => void }) {
-  const overlayVariants = [
-    { id: "none", label: "Sem overlay", className: "", note: "Mantém 100% das cores, mas baixa contraste do texto." },
-    { id: "soft", label: "Overlay suave", className: "bg-black/20", note: "Melhora legibilidade sem escurecer tanto o fundo." },
-    {
-      id: "gradient",
-      label: "Gradiente localizado (Aprovado)",
-      className: "bg-gradient-to-b from-black/60 via-black/25 to-transparent",
-      note: "Escurece apenas a zona de texto principal e preserva melhor o resto do fundo."
-    }
-  ] as const;
-
-  const approvedVariant = overlayVariants[2];
-
   return (
     <div className="relative min-h-screen home-hero-bg">
-      {/* Overlay aprovado: gradiente localizado para preservar as cores de fundo */}
-      <div className={`absolute inset-0 ${approvedVariant.className}`}></div>
+      {/* Dark overlay for better text readability */}
+      <div className="absolute inset-0 bg-black/40"></div>
       {/* Hero Section */}
-      <section className="text-white py-16 sm:py-20 relative z-10">
+      <section className="text-white py-20 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="mb-8 rounded-xl border border-white/30 bg-black/35 backdrop-blur-sm p-4 sm:p-5">
-            <h2 className="text-lg sm:text-xl font-bold text-sky-200 mb-4">Comparação de overlay (portal antigo x novo aprovado)</h2>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 text-left mb-4">
-              <div className="rounded-lg border border-white/20 bg-black/20 p-4">
-                <h3 className="font-semibold text-white mb-2">Portal antigo</h3>
-                <p className="text-sm text-sky-100">Overlay global: <span className="font-mono">bg-black/40</span>. Boa leitura, porém “lava” parte das cores originais do fundo.</p>
-              </div>
-              <div className="rounded-lg border-2 border-sky-300/70 bg-sky-950/40 p-4">
-                <h3 className="font-semibold text-white mb-2">Portal novo (aprovado)</h3>
-                <p className="text-sm text-sky-100">Overlay localizado em gradiente sob a área principal de texto, preservando mais saturação nas demais áreas.</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {overlayVariants.map((variant) => (
-                <div key={variant.id} className={`rounded-lg p-3 border ${variant.id === "gradient" ? "border-sky-300/80 bg-sky-900/35" : "border-white/20 bg-black/20"}`}>
-                  <p className="text-sm font-semibold text-white">{variant.label}</p>
-                  <p className="text-xs text-sky-100 mt-1">{variant.note}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mb-6 sm:mb-8 pt-2 sm:pt-3">
-            <Logo size="w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48" className="mx-auto mb-5 sm:mb-7 mt-1" />
+          <div className="mb-8">
+            <Logo size="w-48 h-48" className="mx-auto mb-8" />
             <h1 
-              className="text-6xl sm:text-7xl md:text-8xl font-black mb-4 sm:mb-6" 
+              className="text-8xl font-black mb-6" 
               style={{ 
                 fontFamily: 'Impact, "Arial Black", sans-serif',
                 color: '#87ceeb',
-                textShadow: '2px 2px 0px #000, -1px -1px 0px #000, 1px -1px 0px #000',
-                WebkitTextStroke: '1.25px #000'
+                textShadow: '3px 3px 0px #000, -1px -1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000, 1px 1px 0px #000',
+                WebkitTextStroke: '2px #000'
               }}
             >
               AI
             </h1>
             <p 
-              className="text-2xl sm:text-3xl md:text-4xl font-black leading-tight px-2" 
+              className="text-4xl font-black" 
               style={{ 
                 fontFamily: 'Impact, "Arial Black", sans-serif',
                 color: '#87ceeb',
-                textShadow: '1.5px 1.5px 0px #000, -1px -1px 0px #000, 1px -1px 0px #000',
+                textShadow: '2px 2px 0px #000, -1px -1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000, 1px 1px 0px #000',
                 WebkitTextStroke: '1px #000'
               }}
             >
