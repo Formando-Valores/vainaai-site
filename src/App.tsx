@@ -84,7 +84,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-black shadow-lg sticky top-0 z-50">
+      <header className="sticky top-0 z-50 border-b border-white/10 bg-black/95 shadow-lg backdrop-blur">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
@@ -118,10 +118,10 @@ export default function App() {
             </nav>
 
             {/* CTA Section */}
-            <div className="hidden lg:flex items-center space-x-4">
+            <div className="hidden lg:flex items-center space-x-3">
               <button
                 onClick={() => setCurrentPage('join')}
-                className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
+                className="btn-primary px-4 py-2 text-sm"
               >
                 Associe-se
               </button>
@@ -130,7 +130,7 @@ export default function App() {
             {/* Mobile menu button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 rounded-md text-gray-300 hover:text-white hover:bg-gray-800"
+              className="lg:hidden rounded-md p-2 text-gray-300 transition-colors hover:bg-gray-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -140,7 +140,16 @@ export default function App() {
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
           <div className="lg:hidden bg-black border-t border-gray-800">
-            <div className="px-2 pt-2 pb-3 space-y-1">
+            <div className="space-y-3 px-3 pb-4 pt-3">
+              <button
+                onClick={() => {
+                  setCurrentPage('join');
+                  setMobileMenuOpen(false);
+                }}
+                className="btn-primary w-full"
+              >
+                Associe-se
+              </button>
               {menuItems.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -265,9 +274,9 @@ function HomePage({ setCurrentPage }: { setCurrentPage: (page: Page) => void }) 
   return (
     <div className="relative min-h-screen home-hero-bg">
       {/* Dark overlay for better text readability */}
-      <div className="absolute inset-0 bg-black/40"></div>
+      <div className="absolute inset-0 bg-black/65"></div>
       {/* Hero Section */}
-      <section className="text-white py-20 relative z-10">
+      <section className="content-section relative z-10 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="mb-8">
             <Logo size="w-48 h-48" className="mx-auto mb-8" />
@@ -295,28 +304,28 @@ function HomePage({ setCurrentPage }: { setCurrentPage: (page: Page) => void }) 
             </p>
           </div>
           
-          <p className="text-xl mb-12 max-w-3xl mx-auto bg-white/10 backdrop-blur-sm rounded-lg p-6 text-sky-100 shadow-lg border-2 border-blue-900 text-justified">
+          <p className="surface-panel mb-10 mx-auto max-w-3xl text-justify text-lg leading-relaxed text-sky-50">
             Defendemos os direitos dos cidadãos e promovemos a justiça social através de ações concretas e transparentes.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <button
               onClick={() => setCurrentPage('join')}
-              className="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors flex items-center space-x-2"
+              className="btn-primary px-8 py-4 text-lg"
             >
               <UserPlus className="w-5 h-5" />
               <span>👉 Associe-se</span>
             </button>
             <button
               onClick={() => setCurrentPage('report')}
-              className="bg-red-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-red-700 transition-colors flex items-center space-x-2"
+              className="btn-secondary px-8 py-4 text-lg"
             >
               <AlertTriangle className="w-5 h-5" />
               <span>👉 Denuncie as ilegalidades</span>
             </button>
             <button
               onClick={() => setCurrentPage('contact')}
-              className="bg-green-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
+              className="btn-tertiary px-8 py-4 text-lg"
             >
               <MessageSquare className="w-5 h-5" />
               <span>👉 Precisa de ajuda? Contacte-nos</span>
@@ -326,27 +335,27 @@ function HomePage({ setCurrentPage }: { setCurrentPage: (page: Page) => void }) 
       </section>
 
       {/* Features Section */}
-      <section className="py-16 relative z-10">
+      <section className="content-section relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+          <div className="mb-12 text-center">
             <h2 className="text-3xl font-bold bg-gradient-to-r from-sky-400 via-sky-300 to-blue-400 bg-clip-text text-transparent mb-4">Como Podemos Ajudar</h2>
-            <p className="text-xl text-sky-100 bg-gray-500/20 backdrop-blur-sm rounded-lg p-4 inline-block">Conheça os nossos principais serviços</p>
+            <p className="surface-panel inline-block text-lg text-sky-50">Conheça os nossos principais serviços</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center p-6 rounded-lg bg-gray-500/20 backdrop-blur-sm border border-gray-300/30 hover:shadow-lg transition-shadow">
+            <div className="surface-panel text-center">
               <Briefcase className="w-12 h-12 text-sky-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-2 bg-gradient-to-r from-sky-400 via-sky-300 to-blue-400 bg-clip-text text-transparent">Consultoria Jurídica</h3>
               <p className="text-sky-100 text-justified">Orientação legal gratuita para cidadãos em situação de vulnerabilidade.</p>
             </div>
             
-            <div className="text-center p-6 rounded-lg bg-gray-500/20 backdrop-blur-sm border border-gray-300/30 hover:shadow-lg transition-shadow">
+            <div className="surface-panel text-center">
               <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-2 bg-gradient-to-r from-sky-400 via-sky-300 to-blue-400 bg-clip-text text-transparent">Canal de Denúncias</h3>
               <p className="text-sky-100 text-justified">Plataforma segura para reportar irregularidades e injustiças.</p>
             </div>
             
-            <div className="text-center p-6 rounded-lg bg-gray-500/20 backdrop-blur-sm border border-gray-300/30 hover:shadow-lg transition-shadow">
+            <div className="surface-panel text-center">
               <Heart className="w-12 h-12 text-green-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-2 bg-gradient-to-r from-sky-400 via-sky-300 to-blue-400 bg-clip-text text-transparent">Apoio Social</h3>
               <p className="text-sky-100 text-justified">Programas de assistência e apoio às comunidades mais necessitadas.</p>
@@ -365,7 +374,7 @@ function AboutPage() {
         <PageHeader title="Quem Somos" subtitle="Conheça a nossa missão, visão e valores" />
 
         <div className="prose prose-lg max-w-none">
-          <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
+          <div className="surface-card mb-8 p-8">
             <h2 className="text-2xl font-bold text-sky-600 mb-4">Quem Somos</h2>
             <p className="text-sky-700 mb-4 text-justified">
               A Associação contra as Injustiças – AI é uma entidade independente, de âmbito nacional e europeu, 
@@ -377,21 +386,21 @@ function AboutPage() {
             </p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
+          <div className="surface-card mb-8 p-8">
             <h2 className="text-2xl font-bold text-sky-600 mb-4">Nossa Missão</h2>
             <p className="text-sky-700 mb-6 text-justified">
               Defender os direitos de todos, garantindo acesso à justiça com simplicidade e baixo custo.
             </p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
+          <div className="surface-card mb-8 p-8">
             <h2 className="text-2xl font-bold text-sky-600 mb-4">Nossa Visão</h2>
             <p className="text-sky-700 mb-6 text-justified">
               Ser referência em Portugal e na União Europeia na luta contra injustiças e ilegalidades.
             </p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-lg p-8">
+          <div className="surface-card p-8">
             <h2 className="text-2xl font-bold text-sky-600 mb-4">Nossos Valores</h2>
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4 text-center">
               <div className="p-4 bg-sky-50 rounded-lg">
@@ -745,7 +754,7 @@ function JoinPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <PageHeader title="Associe-se" subtitle="Junte-se à nossa causa e faça a diferença" />
 
-        <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="surface-card p-8">
             <div className="mb-8 text-center">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <UserPlus className="w-8 h-8 text-green-600" />
@@ -1025,7 +1034,7 @@ function ReportPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <PageHeader title="Canal de Denúncias" subtitle="Reporte irregularidades de forma segura e confidencial" />
 
-        <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="surface-card p-8">
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-8">
             <div className="flex items-start space-x-3">
               <AlertTriangle className="w-6 h-6 text-yellow-600 flex-shrink-0 mt-0.5" />
@@ -1250,7 +1259,7 @@ function VolunteersPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-lg p-8">
+          <div className="surface-card p-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Inscreva-se como Voluntário</h2>
             
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -1484,7 +1493,7 @@ function ContactPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-lg p-8">
+          <div className="surface-card p-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Envie-nos uma Mensagem</h2>
             
             <form onSubmit={handleSubmit} className="space-y-4">
