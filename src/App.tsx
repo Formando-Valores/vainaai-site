@@ -291,16 +291,8 @@ function HomePage({ setCurrentPage }: { setCurrentPage: (page: Page) => void }) 
             >
               AI
             </h1>
-            <p 
-              className="text-4xl font-black" 
-              style={{ 
-                fontFamily: 'Impact, "Arial Black", sans-serif',
-                color: '#87ceeb',
-                textShadow: '2px 2px 0px #000, -1px -1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000, 1px 1px 0px #000',
-                WebkitTextStroke: '1px #000'
-              }}
-            >
-              Unidos contra as Injustiças
+            <p className="text-lg sm:text-xl text-sky-100/90 mb-8">
+              Atuação em Portugal e na União Europeia com orientação, denúncia e acompanhamento em casos de injustiça.
             </p>
           </div>
           
