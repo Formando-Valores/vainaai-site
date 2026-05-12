@@ -267,27 +267,27 @@ function HomePage({ setCurrentPage }: { setCurrentPage: (page: Page) => void }) 
       {/* Dark overlay for better text readability */}
       <div className="absolute inset-0 bg-black/40"></div>
       {/* Hero Section */}
-      <section className="text-white py-20 relative z-10">
+      <section className="text-white py-16 sm:py-20 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="mb-8">
-            <Logo size="w-48 h-48" className="mx-auto mb-8" />
+          <div className="mb-6 sm:mb-8 pt-2 sm:pt-3">
+            <Logo size="w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48" className="mx-auto mb-5 sm:mb-7 mt-1" />
             <h1 
-              className="text-8xl font-black mb-6" 
+              className="text-6xl sm:text-7xl md:text-8xl font-black mb-4 sm:mb-6" 
               style={{ 
                 fontFamily: 'Impact, "Arial Black", sans-serif',
                 color: '#87ceeb',
-                textShadow: '3px 3px 0px #000, -1px -1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000, 1px 1px 0px #000',
-                WebkitTextStroke: '2px #000'
+                textShadow: '2px 2px 0px #000, -1px -1px 0px #000, 1px -1px 0px #000',
+                WebkitTextStroke: '1.25px #000'
               }}
             >
               AI
             </h1>
             <p 
-              className="text-4xl font-black" 
+              className="text-2xl sm:text-3xl md:text-4xl font-black leading-tight px-2" 
               style={{ 
                 fontFamily: 'Impact, "Arial Black", sans-serif',
                 color: '#87ceeb',
-                textShadow: '2px 2px 0px #000, -1px -1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000, 1px 1px 0px #000',
+                textShadow: '1.5px 1.5px 0px #000, -1px -1px 0px #000, 1px -1px 0px #000',
                 WebkitTextStroke: '1px #000'
               }}
             >
