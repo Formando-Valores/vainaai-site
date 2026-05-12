@@ -21,6 +21,8 @@ import {
   Mail,
   MessageSquare,
   Shield,
+  Lock,
+  CheckCircle2,
   Info,
   Calculator,
   Scale,
@@ -38,7 +40,7 @@ import {
   PiggyBank
 } from "lucide-react";
 
-type Page = 'home' | 'about' | 'services' | 'areas' | 'projects' | 'news' | 'join' | 'report' | 'volunteers' | 'contact';
+type Page = 'home' | 'about' | 'services' | 'areas' | 'projects' | 'news' | 'join' | 'report' | 'volunteers' | 'contact' | 'privacy';
 
 // Logo component using static assets from /public
 function Logo({ size = "w-10 h-10", className = "" }: { size?: string; className?: string }) {
@@ -265,6 +267,8 @@ function PageContent({ currentPage, setCurrentPage }: { currentPage: Page; setCu
       return <VolunteersPage />;
     case 'contact':
       return <ContactPage />;
+    case 'privacy':
+      return <PrivacyPage />;
     default:
       return <HomePage setCurrentPage={setCurrentPage} />;
   }
@@ -323,6 +327,40 @@ function HomePage({ setCurrentPage }: { setCurrentPage: (page: Page) => void }) 
               <span>👉 Precisa de ajuda? Contacte-nos</span>
             </button>
           </div>
+          <div className="surface-panel mt-8 mx-auto max-w-4xl border border-sky-300/40">
+            <div className="mb-4 flex items-center justify-center gap-2">
+              <Shield className="w-5 h-5 text-sky-300" />
+              <h3 className="text-xl font-semibold text-sky-100">Privacidade e Confiança</h3>
+            </div>
+            <div className="grid grid-cols-1 gap-3 text-left sm:grid-cols-2 lg:grid-cols-4">
+              <div className="rounded-lg bg-black/20 p-3">
+                <Lock className="mb-1 h-4 w-4 text-sky-300" />
+                <p className="text-sm text-sky-50"><strong>Confidencialidade:</strong> identidade e conteúdo protegidos.</p>
+              </div>
+              <div className="rounded-lg bg-black/20 p-3">
+                <Shield className="mb-1 h-4 w-4 text-sky-300" />
+                <p className="text-sm text-sky-50"><strong>Proteção de dados:</strong> tratamento conforme boas práticas e legislação.</p>
+              </div>
+              <div className="rounded-lg bg-black/20 p-3">
+                <CheckCircle2 className="mb-1 h-4 w-4 text-sky-300" />
+                <p className="text-sm text-sky-50"><strong>Uso responsável:</strong> somente para análise e acompanhamento do caso.</p>
+              </div>
+              <div className="rounded-lg bg-black/20 p-3">
+                <MessageSquare className="mb-1 h-4 w-4 text-sky-300" />
+                <p className="text-sm text-sky-50"><strong>Canal seguro:</strong> envio em ambiente protegido.</p>
+              </div>
+            </div>
+            <p className="mt-4 text-sm text-sky-100">
+              Nos formulários de <strong>denúncia</strong> e <strong>contacto</strong>, pedimos apenas os dados mínimos necessários para responder com segurança e prioridade.
+            </p>
+            <button
+              onClick={() => setCurrentPage('privacy')}
+              className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-sky-200 underline underline-offset-4 hover:text-white"
+            >
+              <Info className="h-4 w-4" />
+              Política de Privacidade e Termos de Uso
+            </button>
+          </div>
         </div>
       </section>
 
@@ -355,6 +393,30 @@ function HomePage({ setCurrentPage }: { setCurrentPage: (page: Page) => void }) 
           </div>
         </div>
       </section>
+    </div>
+  );
+}
+
+function PrivacyPage() {
+  return (
+    <div className="py-16">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <PageHeader title="Política de Privacidade e Termos" subtitle="Transparência sobre coleta, uso e proteção de dados" />
+        <div className="surface-card p-8 space-y-5 text-sky-700">
+          <p className="text-justified">
+            Esta seção resume como tratamos informações partilhadas nos canais da associação, incluindo formulários de denúncia e contacto.
+          </p>
+          <p className="text-justified">
+            Coletamos apenas dados essenciais para análise, retorno e encaminhamento do seu pedido. As informações são acessadas por equipa autorizada e utilizadas de forma responsável.
+          </p>
+          <p className="text-justified">
+            Denúncias e mensagens são tratadas com confidencialidade, respeitando deveres legais e medidas de segurança para proteção de dados pessoais.
+          </p>
+          <p className="text-justified">
+            Ao utilizar os formulários, você concorda com este tratamento para fins de atendimento, acompanhamento e comunicação sobre o caso reportado.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
