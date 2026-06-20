@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { createContext, useContext, useState } from "react";
 import { submitForm } from "./lib/api";
 import { Toaster, toast } from "sonner";
+import 'animate.css';
 import { 
   Home, 
   Users, 
@@ -40,84 +41,136 @@ import {
   PiggyBank
 } from "lucide-react";
 
+// ===== Types =====
+type Locale = 'pt-BR' | 'pt-PT' | 'es';
 type Page = 'home' | 'about' | 'services' | 'areas' | 'projects' | 'news' | 'join' | 'report' | 'volunteers' | 'contact' | 'privacy';
 
-// Logo component using static assets from /public
-function Logo({ size = "w-10 h-10", className = "" }: { size?: string; className?: string }) {
-  return (
-    <img
-      src="/logo.svg"
-      alt="AI Logo"
-      className={`${size} rounded-full object-cover ${className}`}
-    />
-  );
+const LanguageContext = createContext<{
+  locale: Locale;
+  setLocale: React.Dispatch<React.SetStateAction<Locale>>;
+} | null>(null);
+
+function useLanguage() {
+  const context = useContext(LanguageContext);
+
+  if (!context) {
+    throw new Error("useLanguage must be used within LanguageContext.Provider");
+  }
+
+  return context;
 }
 
+// ===== Shared UI: Page Header =====
 // Page Header component with logo and title
 function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
+  const { locale } = useLanguage();
+  const isSpanish = locale === 'es';
+
   return (
-    <div className="flex items-center mb-12">
-      <Logo size="w-16 h-16" className="mr-6" />
+    <div className="mb-12 flex items-center border-b border-white/10 pb-8">
+      <img
+        src="/LogoMod.svg"
+        alt="AI Logo"
+        className="mr-6 h-16 w-16 object-contain"
+      />
       <div>
-        <h1 className="text-4xl font-bold text-gray-900">{title}</h1>
-        {subtitle && <p className="text-xl text-sky-400 mt-2">{subtitle}</p>}
+        <p className="eyebrow-text mb-2 text-xs text-blue-300">{isSpanish ? 'Unidos contra las injusticias' : 'Unidos contra as injustiças'}</p>
+        <h1 className="text-4xl font-semibold text-slate-100 lg:text-5xl">{title}</h1>
+        {subtitle && <p className="mt-2 text-lg text-slate-300">{subtitle}</p>}
       </div>
     </div>
   );
 }
 
+// ===== App Shell (Header / Navigation / Footer) =====
 export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [locale, setLocale] = useState<Locale>('pt-BR');
+  const isSpanish = locale === 'es';
+  const isPortuguesePortugal = locale === 'pt-PT';
+
+  const toggleLocale = () => {
+    setLocale((previousLocale) => {
+      if (previousLocale === 'pt-BR') {
+        return 'pt-PT';
+      }
+
+      if (previousLocale === 'pt-PT') {
+        return 'es';
+      }
+
+      return 'pt-BR';
+    });
+  };
+
+  const nextLocaleFlag = locale === 'pt-BR' ? '🇵🇹' : locale === 'pt-PT' ? '🇪🇸' : '🇧🇷';
+  const nextLocaleLabel = locale === 'pt-BR' ? 'PT-PT' : locale === 'pt-PT' ? 'ES' : 'PT-BR';
+  const nextLocaleTitle = locale === 'pt-BR'
+    ? 'Português de Portugal'
+    : locale === 'pt-PT'
+      ? 'Español'
+      : 'Português do Brasil';
 
   const menuItems = [
-    { id: 'home' as Page, label: 'Início', icon: Home },
-    { id: 'about' as Page, label: 'Quem Somos', icon: Users },
-    { id: 'services' as Page, label: 'Serviços', icon: Briefcase },
-    { id: 'areas' as Page, label: 'Áreas de Atuação', icon: MapPin },
-    { id: 'projects' as Page, label: 'Projetos', icon: FolderOpen },
-    { id: 'news' as Page, label: 'Notícias', icon: Newspaper },
-    { id: 'join' as Page, label: 'Associe-se', icon: UserPlus },
-    { id: 'report' as Page, label: 'Denuncie', icon: AlertTriangle },
-    { id: 'volunteers' as Page, label: 'Voluntários', icon: Heart },
-    { id: 'contact' as Page, label: 'Contactos', icon: Phone },
+    { id: 'home' as Page, label: isSpanish ? '' : '', icon: Home },
+    { id: 'about' as Page, label: isSpanish ? 'Quiénes Somos' : 'Quem Somos', icon: Users },
+    { id: 'services' as Page, label: isSpanish ? 'Servicios' : 'Serviços', icon: Briefcase },
+    { id: 'areas' as Page, label: isSpanish ? 'Áreas de Actuación' : isPortuguesePortugal ? 'Áreas de Atuação' : 'Áreas de Atuação', icon: MapPin },
+    { id: 'projects' as Page, label: isSpanish ? 'Proyectos' : 'Projetos', icon: FolderOpen },
+    { id: 'news' as Page, label: isSpanish ? 'Noticias' : 'Notícias', icon: Newspaper },
+    { id: 'join' as Page, label: isSpanish ? 'Hazte Socio' : isPortuguesePortugal ? 'Torne-se Associado' : 'Associe-se', icon: UserPlus },
+    { id: 'report' as Page, label: isSpanish ? 'Denuncia' : 'Denuncie', icon: AlertTriangle },
+    { id: 'volunteers' as Page, label: isSpanish ? 'Voluntarios' : isPortuguesePortugal ? 'Voluntariado' : 'Voluntários', icon: Heart },
+    { id: 'contact' as Page, label: isSpanish ? 'Contactos' : 'Contactos', icon: Phone },
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <LanguageContext.Provider value={{ locale, setLocale }}>
+    <div className="min-h-screen overflow-x-hidden bg-[#0d1117] text-slate-100" lang={isSpanish ? 'es' : locale}>
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-black/95 shadow-lg backdrop-blur">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[#0d1117]/95 backdrop-blur lg:sticky">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
-            <div className="flex items-center space-x-3">
-              <Logo />
+            <div className="flex items-center space-x-2 ml-1">
+              <img
+                src="/LogoMod.svg"
+                alt="AI Logo"
+                className="h-10 w-10 object-contain"
+              />
               <div>
-                <h1 className="text-xl font-bold text-white">AI</h1>
-                <p className="text-xs text-sky-400 font-medium">Unidos contra as Injustiças</p>
+                <h1 className="font-display text-xl font-semibold text-slate-100 lg:hidden">AI</h1>
+                <p className="eyebrow-text text-[10px] text-blue-300">
+                  {isSpanish ? 'Unidos contra las injusticias' : isPortuguesePortugal ? 'Unidos contra as injustiças' : 
+                  'Unidos contra as injustiças'}</p>
               </div>
             </div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex space-x-1">
-              {menuItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => setCurrentPage(item.id)}
-                    className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                      currentPage === item.id
-                        ? 'bg-blue-600 text-white'
-                        : 'text-gray-300 hover:text-white hover:bg-gray-800'
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    <span>{item.label}</span>
-                  </button>
-                );
-              })}
-            </nav>
+            <nav className="hidden lg:flex items-center space-x-1">
+  {menuItems.map((item, index) => {
+    const Icon = item.icon;
+    return (
+      <React.Fragment key={item.id}>
+        {index > 0 && (
+          <span className="self-center h-4 w-px bg-white/20" aria-hidden="true" />
+        )}
+        <button
+          onClick={() => setCurrentPage(item.id)}
+          className={`flex items-center space-x-1 border-b px-3 py-2 text-xs uppercase tracking-wider transition-colors ${
+            currentPage === item.id
+              ? 'border-blue-500 text-white'
+              : 'border-transparent text-slate-300 hover:text-white'
+          }`}
+        >
+          <Icon className="w-4 h-4" />
+          <span>{item.label}</span>
+        </button>
+      </React.Fragment>
+    );
+  })}
+</nav>
 
             {/* CTA Section */}
             <div className="hidden lg:flex items-center space-x-3">
@@ -125,23 +178,37 @@ export default function App() {
                 onClick={() => setCurrentPage('join')}
                 className="btn-primary px-4 py-2 text-sm"
               >
-                Associe-se
+                {isSpanish ? 'Hazte Socio' : isPortuguesePortugal ? 'Torne-se Associado' : 'Associe-se'}
               </button>
             </div>
 
-            {/* Mobile menu button */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden rounded-md p-2 text-gray-300 transition-colors hover:bg-gray-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
+            <div className="flex items-center gap-2 lg:hidden">
+              <button
+                onClick={toggleLocale}
+                className="inline-flex min-w-12 items-center justify-center rounded-none border border-white/15 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-200 transition-colors hover:border-blue-400 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+                aria-label={`Mudar idioma para ${nextLocaleTitle}`}
+                title={nextLocaleTitle}
+              >
+                <span className="inline-flex items-center gap-1">
+                  <span>{nextLocaleFlag}</span>
+                  <span>{nextLocaleLabel}</span>
+                </span>
+              </button>
+
+              {/* Mobile menu button */}
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="p-2 text-slate-300 transition-colors hover:bg-slate-900 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+              >
+                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <div className="lg:hidden bg-black border-t border-gray-800">
+          <div className="border-t border-white/10 bg-[#0f1725] lg:hidden">
             <div className="space-y-3 px-3 pb-4 pt-3">
               <button
                 onClick={() => {
@@ -150,7 +217,7 @@ export default function App() {
                 }}
                 className="btn-primary w-full"
               >
-                Associe-se
+                {isSpanish ? 'Hazte Socio' : isPortuguesePortugal ? 'Torne-se Associado' : 'Associe-se'}
               </button>
               {menuItems.map((item) => {
                 const Icon = item.icon;
@@ -161,10 +228,10 @@ export default function App() {
                       setCurrentPage(item.id);
                       setMobileMenuOpen(false);
                     }}
-                    className={`flex items-center space-x-2 w-full px-3 py-2 rounded-md text-base font-medium ${
+                    className={`flex w-full items-center space-x-2 border px-3 py-2 text-base font-medium ${
                       currentPage === item.id
-                        ? 'bg-blue-600 text-white'
-                        : 'text-gray-300 hover:text-white hover:bg-gray-800'
+                        ? 'border-blue-500 bg-blue-900/30 text-white'
+                        : 'border-white/10 text-slate-300 hover:border-slate-500 hover:text-white'
                     }`}
                   >
                     <Icon className="w-5 h-5" />
@@ -178,50 +245,58 @@ export default function App() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1">
+      <main className="flex-1 pt-16 lg:pt-0">
         <PageContent currentPage={currentPage} setCurrentPage={setCurrentPage} />
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white">
+      <footer className="border-t border-white/10 bg-[#0c1018] text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center space-x-3 mb-4">
-                <Logo />
+                <img
+                  src="/LogoMod.svg"
+                  alt="AI Logo"
+                  className="h-10 w-10 object-contain"
+                />
                 <div>
-                  <h3 className="text-xl font-bold">AI</h3>
-                  <p className="text-sky-400 text-sm">Unidos contra as Injustiças</p>
+      
+                  <p className="eyebrow-text text-[10px] text-blue-300">{isSpanish ? 'Unidos contra las injusticias' : isPortuguesePortugal ? 'Unidos contra as injustiças' : 'Unidos contra as injustiças'}</p>
                 </div>
               </div>
-              <p className="text-sky-300 mb-4 text-justified">
-                Organização dedicada à promoção da justiça social e defesa dos direitos dos cidadãos.
+              <p className="mb-4 text-justified text-slate-300">
+                {isSpanish
+                  ? 'Organización dedicada a la promoción de la justicia social y a la defensa de los derechos de los ciudadanos.'
+                  : isPortuguesePortugal
+                    ? 'Organização dedicada à promoção da justiça social e à defesa dos direitos dos cidadãos.'
+                    : 'Organização dedicada à promoção da justiça social e defesa dos direitos dos cidadãos.'}
               </p>
               <div className="flex space-x-4">
                 <a href="https://www.facebook.com/share/1FELtv6TMH/" target="_blank" rel="noopener noreferrer">
-                  <Facebook className="w-6 h-6 text-gray-400 hover:text-sky-400 cursor-pointer" />
+                  <Facebook className="w-6 h-6 cursor-pointer text-gray-400 hover:text-blue-300" />
                 </a>
-                <Twitter className="w-6 h-6 text-gray-400 hover:text-sky-400 cursor-pointer" />
+                <Twitter className="w-6 h-6 cursor-pointer text-gray-400 hover:text-blue-300" />
                 <a href="https://www.instagram.com/ai.associacaocontrainjusticas?utm_source=qr&igsh=bnE4ZmVzaTVtZDMy" target="_blank" rel="noopener noreferrer">
-                  <Instagram className="w-6 h-6 text-gray-400 hover:text-sky-400 cursor-pointer" />
+                  <Instagram className="w-6 h-6 cursor-pointer text-gray-400 hover:text-blue-300" />
                 </a>
-                <Linkedin className="w-6 h-6 text-gray-400 hover:text-sky-400 cursor-pointer" />
+                <Linkedin className="w-6 h-6 cursor-pointer text-gray-400 hover:text-blue-300" />
               </div>
             </div>
             
             <div>
-              <h4 className="text-lg font-semibold mb-4">Links Rápidos</h4>
+              <h4 className="text-lg font-semibold mb-4">{isSpanish ? 'Enlaces Rápidos' : 'Links Rápidos'}</h4>
               <ul className="space-y-2">
-                <li><button onClick={() => setCurrentPage('about')} className="text-sky-300 hover:text-white">Quem Somos</button></li>
-                <li><button onClick={() => setCurrentPage('services')} className="text-sky-300 hover:text-white">Serviços</button></li>
-                <li><button onClick={() => setCurrentPage('join')} className="text-sky-300 hover:text-white">Associe-se</button></li>
-                <li><button onClick={() => setCurrentPage('report')} className="text-sky-300 hover:text-white">Denuncie</button></li>
+                <li><button onClick={() => setCurrentPage('about')} className="text-slate-300 hover:text-white">{isSpanish ? 'Quiénes Somos' : 'Quem Somos'}</button></li>
+                <li><button onClick={() => setCurrentPage('services')} className="text-slate-300 hover:text-white">{isSpanish ? 'Servicios' : 'Serviços'}</button></li>
+                <li><button onClick={() => setCurrentPage('join')} className="text-slate-300 hover:text-white">{isSpanish ? 'Hazte Socio' : isPortuguesePortugal ? 'Torne-se Associado' : 'Associe-se'}</button></li>
+                <li><button onClick={() => setCurrentPage('report')} className="text-slate-300 hover:text-white">{isSpanish ? 'Denuncia' : 'Denuncie'}</button></li>
               </ul>
             </div>
             
             <div>
-              <h4 className="text-lg font-semibold mb-4">Contacto</h4>
-              <div className="space-y-2 text-sky-300">
+              <h4 className="text-lg font-semibold mb-4">{isSpanish ? 'Contacto' : 'Contacto'}</h4>
+              <div className="space-y-2 text-slate-300">
                 <div className="flex items-center space-x-2">
                   <Mail className="w-4 h-4" />
                   <span>contato@vainaai.pt</span>
@@ -234,17 +309,44 @@ export default function App() {
             </div>
           </div>
           
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sky-400">
-            <p>&copy; 2025 AI. Todos os direitos reservados.</p>
+          <div className="mt-8 border-t border-white/10 pt-8 text-center text-slate-400">
+            <p>{isSpanish ? '© 2025 AI. Todos los derechos reservados.' : isPortuguesePortugal ? '© 2025 AI. Todos os direitos reservados.' : '© 2025 AI. Todos os direitos reservados.'}</p>
           </div>
         </div>
       </footer>
 
+      <button
+        type="button"
+        onClick={toggleLocale}
+        className="fixed bottom-5 left-5 z-50 hidden h-14 min-w-14 items-center justify-center rounded-full border border-white/15 bg-[#0f1725] px-4 text-xs font-semibold uppercase tracking-wider text-white shadow-lg shadow-black/30 transition-transform duration-200 hover:scale-105 hover:border-blue-400 hover:bg-[#15213a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d1117] lg:flex"
+        aria-label={`Mudar idioma para ${nextLocaleTitle}`}
+        title={nextLocaleTitle}
+      >
+        <span className="inline-flex items-center gap-1">
+          <span>{nextLocaleFlag}</span>
+          <span>{nextLocaleLabel}</span>
+        </span>
+      </button>
+
+      <a
+        href="https://wa.me/351916068515"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Contactar via WhatsApp"
+        className="animate-bounce fixed bottom-5 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg shadow-black/30 transition-transform duration-200 hover:scale-105 hover:bg-[#1fba57] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d1117]"
+      >
+        <svg viewBox="0 0 24 24" className="h-7 w-7 fill-current" aria-hidden="true">
+          <path d="M19.05 4.91A9.82 9.82 0 0 0 12.03 2c-5.46 0-9.9 4.44-9.9 9.9 0 1.74.45 3.43 1.31 4.93L2 22l5.35-1.4a9.86 9.86 0 0 0 4.68 1.19h.01c5.46 0 9.9-4.44 9.9-9.9 0-2.64-1.03-5.12-2.89-6.98Zm-7.02 15.21h-.01a8.2 8.2 0 0 1-4.18-1.14l-.3-.18-3.18.83.85-3.1-.19-.32a8.25 8.25 0 0 1-1.27-4.39c0-4.55 3.71-8.25 8.27-8.25 2.21 0 4.29.86 5.85 2.42a8.2 8.2 0 0 1 2.41 5.84c0 4.56-3.71 8.27-8.25 8.27Zm4.53-6.18c-.25-.13-1.47-.72-1.7-.8-.23-.08-.4-.12-.57.12-.17.25-.65.8-.8.96-.15.17-.29.19-.54.06-.25-.13-1.04-.38-1.98-1.22-.73-.65-1.22-1.46-1.37-1.7-.14-.25-.02-.39.11-.52.11-.11.25-.29.38-.43.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.43-.06-.13-.57-1.37-.78-1.88-.21-.5-.42-.43-.57-.44l-.49-.01c-.17 0-.43.06-.66.31-.23.25-.87.85-.87 2.08 0 1.22.89 2.41 1.01 2.57.13.17 1.75 2.67 4.23 3.74.59.25 1.04.4 1.4.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.06-.09-.23-.15-.48-.28Z" />
+        </svg>
+      </a>
+
       <Toaster />
     </div>
+    </LanguageContext.Provider>
   );
 }
 
+// ===== Page Router =====
 function PageContent({ currentPage, setCurrentPage }: { currentPage: Page; setCurrentPage: (page: Page) => void }) {
   switch (currentPage) {
     case 'home':
@@ -274,91 +376,107 @@ function PageContent({ currentPage, setCurrentPage }: { currentPage: Page; setCu
   }
 }
 
+// ===== Page: Home =====
 function HomePage({ setCurrentPage }: { setCurrentPage: (page: Page) => void }) {
+  const { locale } = useLanguage();
+  const isSpanish = locale === 'es';
+
   return (
     <div className="relative min-h-screen home-hero-bg">
       {/* Dark overlay for better text readability */}
       <div className="absolute inset-0 bg-black/65"></div>
       {/* Hero Section */}
       <section className="content-section relative z-10 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="mb-8">
-            <Logo size="w-48 h-48" className="mx-auto mb-8" />
-            <h1 
-              className="text-8xl font-black mb-6" 
-              style={{ 
-                fontFamily: 'Impact, "Arial Black", sans-serif',
-                color: '#87ceeb',
-                textShadow: '3px 3px 0px #000, -1px -1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000, 1px 1px 0px #000',
-                WebkitTextStroke: '2px #000'
-              }}
-            >
-              AI
-            </h1>
-            <p className="text-lg sm:text-xl text-sky-100/90 mb-8">
-              Atuação em Portugal e na União Europeia com orientação, denúncia e acompanhamento em casos de injustiça.
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-left">
+          <div className="mb-8 flex flex-col items-start gap-4 lg:items-start lg:text-left">
+            <img
+              src="/LogoMod.svg"
+              alt="AI Logo"
+              className="mx-auto h-28 w-28 object-contain sm:h-36 sm:w-36 lg:mx-0 lg:h-52 lg:w-100 hover:scale-110 transition-transform duration-300 animate__animated animate__fadeInDown  animate__delay-1s"
+            />
+              <h1
+                className="
+                mb-5 max-w-2xl font-black
+                text-[clamp(5.4rem,10vw,3.6rem)]
+                sm:text-[clamp(3rem,9vw,5.2rem)]
+                md:text-7xl lg:text-7xl
+               leading-[1.0] tracking-tight
+               drop-shadow-md
+               animate__animated animate__fadeInLeft  animate__delay-1s
+               " >
+                 <span className="block text-white ">{isSpanish ? 'La justicia' : 'A justiça'}</span>
+                 <span className="block -mt-1 text-white">{isSpanish ? 'no' : 'não'}</span>
+                   <span className="block -mt-1 text-primary  ">{isSpanish ? 'puede' : 'pode'}</span>
+                   <span className="block -mt-1 text-primary">{isSpanish ? 'esperar.' : 'esperar.'}</span>
+              </h1>
+            <p className="mb-0 w-2xl text-base text-sky-100/90 sm:text-lg lg:text-xl animate__animated animate__fadeInLeft  animate__delay-2s">
+                {isSpanish
+                  ? 'Defendemos los derechos de los ciudadanos y promovemos la justicia social mediante acciones concretas y transparentes.'
+                  : 'Defendemos os direitos dos cidadãos e promovemos a justiça social através de ações concretas e transparentes.'}
+            </p>
+            <p className="mb-0 w-2xl text-base text-sky-100/90 sm:text-lg lg:text-xl animate__animated animate__fadeInLeft  animate__delay-2s">
+                 {isSpanish
+                   ? 'Actuación en Portugal y en la Unión Europea con orientación, denuncia y acompañamiento en casos de injusticia.'
+                   : 'Atuação em Portugal e na União Europeia com orientação, denúncia e acompanhamento em casos de injustiça.'}
             </p>
           </div>
-          
-          <p className="surface-panel mb-10 mx-auto max-w-3xl text-justify text-lg leading-relaxed text-sky-50">
-            Defendemos os direitos dos cidadãos e promovemos a justiça social através de ações concretas e transparentes.
-          </p>
-          
-          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <button
-              onClick={() => setCurrentPage('join')}
-              className="btn-primary px-8 py-4 text-lg"
-            >
-              <UserPlus className="w-5 h-5" />
-              <span>👉 Associe-se</span>
-            </button>
+
+
+          <div className="flex flex-wrap items-start gap-3 sm:gap-4 animate__animated animate__fadeInUp  animate__delay-2s">
             <button
               onClick={() => setCurrentPage('report')}
-              className="btn-secondary px-8 py-4 text-lg"
+              className="btn-primary px-5 py-2.5 text-sm sm:px-6 sm:py-3 sm:text-base md:px-8 md:py-4 md:text-lg"
             >
-              <AlertTriangle className="w-5 h-5" />
-              <span>👉 Denuncie as ilegalidades</span>
+              <AlertTriangle className="w-5 h-5 animate-pulse" />
+              <span>{isSpanish ? 'Denuncia ahora' : 'Denuncie agora'}</span>
+            </button>
+            <button
+              onClick={() => setCurrentPage('join')}
+              className="btn-secondary px-5 py-2.5 text-sm sm:px-6 sm:py-3 sm:text-base md:px-8 md:py-4 md:text-lg"
+            >
+              <UserPlus className="w-5 h-5" />
+              <span>{isSpanish ? 'Hazte Socio' : 'Associe-se'}</span>
             </button>
             <button
               onClick={() => setCurrentPage('contact')}
-              className="btn-tertiary px-8 py-4 text-lg"
+              className="btn-tertiary px-5 py-2.5 text-sm sm:px-6 sm:py-3 sm:text-base md:px-8 md:py-4 md:text-lg"
             >
               <MessageSquare className="w-5 h-5" />
-              <span>👉 Precisa de ajuda? Contacte-nos</span>
+              <span>{isSpanish ? '¿Necesitas ayuda?' : 'Precisa de ajuda?'}</span>
             </button>
           </div>
-          <div className="surface-panel mt-8 mx-auto max-w-4xl border border-sky-300/40">
-            <div className="mb-4 flex items-center justify-center gap-2">
+          <div className="surface-panel mt-8 mx-auto max-w-4xl border border-sky-300/40 animate__animated animate__fadeInUp  animate__delay-2s">
+            <div className="mb-4 flex items-center justify-start gap-2">
               <Shield className="w-5 h-5 text-sky-300" />
-              <h3 className="text-xl font-semibold text-sky-100">Privacidade e Confiança</h3>
+              <h3 className="text-xl font-semibold text-sky-100">{isSpanish ? 'Privacidad y Confianza' : 'Privacidade e Confiança'}</h3>
             </div>
             <div className="grid grid-cols-1 gap-3 text-left sm:grid-cols-2 lg:grid-cols-4">
               <div className="rounded-lg bg-black/20 p-3">
                 <Lock className="mb-1 h-4 w-4 text-sky-300" />
-                <p className="text-sm text-sky-50"><strong>Confidencialidade:</strong> identidade e conteúdo protegidos.</p>
+                <p className="text-sm text-sky-50"><strong>{isSpanish ? 'Confidencialidad:' : 'Confidencialidade:'}</strong> {isSpanish ? 'identidad y contenido protegidos.' : 'identidade e conteúdo protegidos.'}</p>
               </div>
               <div className="rounded-lg bg-black/20 p-3">
                 <Shield className="mb-1 h-4 w-4 text-sky-300" />
-                <p className="text-sm text-sky-50"><strong>Proteção de dados:</strong> tratamento conforme boas práticas e legislação.</p>
+                <p className="text-sm text-sky-50"><strong>{isSpanish ? 'Protección de datos:' : 'Proteção de dados:'}</strong> {isSpanish ? 'tratamiento conforme a buenas prácticas y legislación.' : 'tratamento conforme boas práticas e legislação.'}</p>
               </div>
               <div className="rounded-lg bg-black/20 p-3">
                 <CheckCircle2 className="mb-1 h-4 w-4 text-sky-300" />
-                <p className="text-sm text-sky-50"><strong>Uso responsável:</strong> somente para análise e acompanhamento do caso.</p>
+                <p className="text-sm text-sky-50"><strong>{isSpanish ? 'Uso responsable:' : 'Uso responsável:'}</strong> {isSpanish ? 'solo para el análisis y seguimiento del caso.' : 'somente para análise e acompanhamento do caso.'}</p>
               </div>
               <div className="rounded-lg bg-black/20 p-3">
                 <MessageSquare className="mb-1 h-4 w-4 text-sky-300" />
-                <p className="text-sm text-sky-50"><strong>Canal seguro:</strong> envio em ambiente protegido.</p>
+                <p className="text-sm text-sky-50"><strong>{isSpanish ? 'Canal seguro:' : 'Canal seguro:'}</strong> {isSpanish ? 'envío en entorno protegido.' : 'envio em ambiente protegido.'}</p>
               </div>
             </div>
             <p className="mt-4 text-sm text-sky-100">
-              Nos formulários de <strong>denúncia</strong> e <strong>contacto</strong>, pedimos apenas os dados mínimos necessários para responder com segurança e prioridade.
+              {isSpanish ? 'En los formularios de ' : 'Nos formulários de '}<strong>{isSpanish ? 'denuncia' : 'denúncia'}</strong>{isSpanish ? ' y ' : ' e '}<strong>{isSpanish ? 'contacto' : 'contacto'}</strong>{isSpanish ? ', pedimos solo los datos mínimos necesarios para responder con seguridad y prioridad.' : ', pedimos apenas os dados mínimos necessários para responder com segurança e prioridade.'}
             </p>
             <button
               onClick={() => setCurrentPage('privacy')}
               className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-sky-200 underline underline-offset-4 hover:text-white"
             >
               <Info className="h-4 w-4" />
-              Política de Privacidade e Termos de Uso
+              {isSpanish ? 'Política de Privacidad y Términos de Uso' : 'Política de Privacidade e Termos de Uso'}
             </button>
           </div>
         </div>
@@ -368,27 +486,27 @@ function HomePage({ setCurrentPage }: { setCurrentPage: (page: Page) => void }) 
       <section className="content-section relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-sky-400 via-sky-300 to-blue-400 bg-clip-text text-transparent mb-4">Como Podemos Ajudar</h2>
-            <p className="surface-panel inline-block text-lg text-sky-50">Conheça os nossos principais serviços</p>
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-sky-400 via-sky-300 to-blue-400 bg-clip-text text-transparent mb-4">{isSpanish ? 'Cómo Podemos Ayudar' : 'Como Podemos Ajudar'}</h2>
+            <p className="surface-panel inline-block text-lg text-sky-50">{isSpanish ? 'Conozca nuestros principales servicios' : 'Conheça os nossos principais serviços'}</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="surface-panel text-center">
               <Briefcase className="w-12 h-12 text-sky-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2 bg-gradient-to-r from-sky-400 via-sky-300 to-blue-400 bg-clip-text text-transparent">Consultoria Jurídica</h3>
-              <p className="text-sky-100 text-justified">Orientação legal gratuita para cidadãos em situação de vulnerabilidade.</p>
+              <h3 className="text-xl font-semibold mb-2 bg-gradient-to-r from-sky-400 via-sky-300 to-blue-400 bg-clip-text text-transparent">{isSpanish ? 'Consultoría Jurídica' : 'Consultoria Jurídica'}</h3>
+              <p className="text-sky-100 text-justified">{isSpanish ? 'Orientación legal gratuita para ciudadanos en situación de vulnerabilidad.' : 'Orientação legal gratuita para cidadãos em situação de vulnerabilidade.'}</p>
             </div>
             
             <div className="surface-panel text-center">
               <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2 bg-gradient-to-r from-sky-400 via-sky-300 to-blue-400 bg-clip-text text-transparent">Canal de Denúncias</h3>
-              <p className="text-sky-100 text-justified">Plataforma segura para reportar irregularidades e injustiças.</p>
+              <h3 className="text-xl font-semibold mb-2 bg-gradient-to-r from-sky-400 via-sky-300 to-blue-400 bg-clip-text text-transparent">{isSpanish ? 'Canal de Denuncias' : 'Canal de Denúncias'}</h3>
+              <p className="text-sky-100 text-justified">{isSpanish ? 'Plataforma segura para denunciar irregularidades e injusticias.' : 'Plataforma segura para reportar irregularidades e injustiças.'}</p>
             </div>
             
             <div className="surface-panel text-center">
               <Heart className="w-12 h-12 text-green-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2 bg-gradient-to-r from-sky-400 via-sky-300 to-blue-400 bg-clip-text text-transparent">Apoio Social</h3>
-              <p className="text-sky-100 text-justified">Programas de assistência e apoio às comunidades mais necessitadas.</p>
+              <h3 className="text-xl font-semibold mb-2 bg-gradient-to-r from-sky-400 via-sky-300 to-blue-400 bg-clip-text text-transparent">{isSpanish ? 'Apoyo Social' : 'Apoio Social'}</h3>
+              <p className="text-sky-100 text-justified">{isSpanish ? 'Programas de asistencia y apoyo a las comunidades más necesitadas.' : 'Programas de assistência e apoio às comunidades mais necessitadas.'}</p>
             </div>
           </div>
         </div>
@@ -397,23 +515,27 @@ function HomePage({ setCurrentPage }: { setCurrentPage: (page: Page) => void }) 
   );
 }
 
+// ===== Page: Privacy =====
 function PrivacyPage() {
+  const { locale } = useLanguage();
+  const isSpanish = locale === 'es';
+
   return (
     <div className="py-16">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <PageHeader title="Política de Privacidade e Termos" subtitle="Transparência sobre coleta, uso e proteção de dados" />
+        <PageHeader title={isSpanish ? 'Política de Privacidad y Términos' : 'Política de Privacidade e Termos'} subtitle={isSpanish ? 'Transparencia sobre la recopilación, uso y protección de datos' : 'Transparência sobre coleta, uso e proteção de dados'} />
         <div className="surface-card p-8 space-y-5 text-sky-700">
           <p className="text-justified">
-            Esta seção resume como tratamos informações partilhadas nos canais da associação, incluindo formulários de denúncia e contacto.
+            {isSpanish ? 'Esta sección resume cómo tratamos la información compartida en los canales de la asociación, incluidos los formularios de denuncia y contacto.' : 'Esta seção resume como tratamos informações partilhadas nos canais da associação, incluindo formulários de denúncia e contacto.'}
           </p>
           <p className="text-justified">
-            Coletamos apenas dados essenciais para análise, retorno e encaminhamento do seu pedido. As informações são acessadas por equipa autorizada e utilizadas de forma responsável.
+            {isSpanish ? 'Recopilamos únicamente los datos esenciales para el análisis, la respuesta y la tramitación de su solicitud. La información es accedida por un equipo autorizado y utilizada de forma responsable.' : 'Coletamos apenas dados essenciais para análise, retorno e encaminhamento do seu pedido. As informações são acessadas por equipa autorizada e utilizadas de forma responsável.'}
           </p>
           <p className="text-justified">
-            Denúncias e mensagens são tratadas com confidencialidade, respeitando deveres legais e medidas de segurança para proteção de dados pessoais.
+            {isSpanish ? 'Las denuncias y los mensajes se tratan con confidencialidad, respetando las obligaciones legales y las medidas de seguridad para la protección de los datos personales.' : 'Denúncias e mensagens são tratadas com confidencialidade, respeitando deveres legais e medidas de segurança para proteção de dados pessoais.'}
           </p>
           <p className="text-justified">
-            Ao utilizar os formulários, você concorda com este tratamento para fins de atendimento, acompanhamento e comunicação sobre o caso reportado.
+            {isSpanish ? 'Al utilizar los formularios, usted acepta este tratamiento con fines de atención, seguimiento y comunicación sobre el caso comunicado.' : 'Ao utilizar os formulários, você concorda com este tratamento para fins de atendimento, acompanhamento e comunicação sobre o caso reportado.'}
           </p>
         </div>
       </div>
@@ -421,56 +543,58 @@ function PrivacyPage() {
   );
 }
 
+// ===== Page: About =====
 function AboutPage() {
+  const { locale } = useLanguage();
+  const isSpanish = locale === 'es';
+
   return (
     <div className="py-16">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <PageHeader title="Quem Somos" subtitle="Conheça a nossa missão, visão e valores" />
+        <PageHeader title={isSpanish ? 'Quiénes Somos' : 'Quem Somos'} subtitle={isSpanish ? 'Conozca nuestra misión, visión y valores' : 'Conheça a nossa missão, visão e valores'} />
 
         <div className="prose prose-lg max-w-none">
           <div className="surface-card mb-8 p-8">
-            <h2 className="text-2xl font-bold text-sky-600 mb-4">Quem Somos</h2>
+            <h2 className="text-2xl font-bold text-sky-600 mb-4">{isSpanish ? 'Quiénes Somos' : 'Quem Somos'}</h2>
             <p className="text-sky-700 mb-4 text-justified">
-              A Associação contra as Injustiças – AI é uma entidade independente, de âmbito nacional e europeu, 
-              que defende os direitos de cidadãos e imigrantes contra ilegalidades do poder público e privado.
+              {isSpanish ? 'La Asociación contra las Injusticias – AI es una entidad independiente, de ámbito nacional y europeo, que defiende los derechos de ciudadanos e inmigrantes frente a las ilegalidades del poder público y privado.' : 'A Associação contra as Injustiças – AI é uma entidade independente, de âmbito nacional e europeu, que defende os direitos de cidadãos e imigrantes contra ilegalidades do poder público e privado.'}
             </p>
             <p className="text-sky-700 mb-6 text-justified">
-              Com uma equipa de mais de 20 especialistas, prestamos serviços jurídicos, de mediação e fiscalização 
-              de processos administrativos e fiscais, assegurando justiça acessível, transparente e de qualidade.
+              {isSpanish ? 'Con un equipo de más de 20 especialistas, prestamos servicios jurídicos, de mediación y de supervisión de procedimientos administrativos y fiscales, garantizando una justicia accesible, transparente y de calidad.' : 'Com uma equipa de mais de 20 especialistas, prestamos serviços jurídicos, de mediação e fiscalização de processos administrativos e fiscais, assegurando justiça acessível, transparente e de qualidade.'}
             </p>
           </div>
 
           <div className="surface-card mb-8 p-8">
-            <h2 className="text-2xl font-bold text-sky-600 mb-4">Nossa Missão</h2>
+            <h2 className="text-2xl font-bold text-sky-600 mb-4">{isSpanish ? 'Nuestra Misión' : 'Nossa Missão'}</h2>
             <p className="text-sky-700 mb-6 text-justified">
-              Defender os direitos de todos, garantindo acesso à justiça com simplicidade e baixo custo.
+              {isSpanish ? 'Defender los derechos de todos, garantizando el acceso a la justicia con simplicidad y bajo coste.' : 'Defender os direitos de todos, garantindo acesso à justiça com simplicidade e baixo custo.'}
             </p>
           </div>
 
           <div className="surface-card mb-8 p-8">
-            <h2 className="text-2xl font-bold text-sky-600 mb-4">Nossa Visão</h2>
+            <h2 className="text-2xl font-bold text-sky-600 mb-4">{isSpanish ? 'Nuestra Visión' : 'Nossa Visão'}</h2>
             <p className="text-sky-700 mb-6 text-justified">
-              Ser referência em Portugal e na União Europeia na luta contra injustiças e ilegalidades.
+              {isSpanish ? 'Ser una referencia en Portugal y en la Unión Europea en la lucha contra las injusticias y las ilegalidades.' : 'Ser referência em Portugal e na União Europeia na luta contra injustiças e ilegalidades.'}
             </p>
           </div>
 
           <div className="surface-card p-8">
-            <h2 className="text-2xl font-bold text-sky-600 mb-4">Nossos Valores</h2>
+            <h2 className="text-2xl font-bold text-sky-600 mb-4">{isSpanish ? 'Nuestros Valores' : 'Nossos Valores'}</h2>
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4 text-center">
               <div className="p-4 bg-sky-50 rounded-lg">
-                <h3 className="font-semibold text-sky-800">Justiça</h3>
+                <h3 className="font-semibold text-sky-800">{isSpanish ? 'Justicia' : 'Justiça'}</h3>
               </div>
               <div className="p-4 bg-sky-50 rounded-lg">
-                <h3 className="font-semibold text-sky-800">Transparência</h3>
+                <h3 className="font-semibold text-sky-800">{isSpanish ? 'Transparencia' : 'Transparência'}</h3>
               </div>
               <div className="p-4 bg-sky-50 rounded-lg">
-                <h3 className="font-semibold text-sky-800">Solidariedade</h3>
+                <h3 className="font-semibold text-sky-800">{isSpanish ? 'Solidaridad' : 'Solidariedade'}</h3>
               </div>
               <div className="p-4 bg-sky-50 rounded-lg">
-                <h3 className="font-semibold text-sky-800">Ética</h3>
+                <h3 className="font-semibold text-sky-800">{isSpanish ? 'Ética' : 'Ética'}</h3>
               </div>
               <div className="p-4 bg-sky-50 rounded-lg">
-                <h3 className="font-semibold text-sky-800">Acessibilidade</h3>
+                <h3 className="font-semibold text-sky-800">{isSpanish ? 'Accesibilidad' : 'Acessibilidade'}</h3>
               </div>
             </div>
           </div>
@@ -480,35 +604,39 @@ function AboutPage() {
   );
 }
 
+// ===== Page: Services =====
 function ServicesPage() {
+  const { locale } = useLanguage();
+  const isSpanish = locale === 'es';
+
   const services = [
     {
-      title: "Apoio jurídico em tribunais e órgãos públicos",
-      description: "Representação e assistência jurídica especializada em processos judiciais e administrativos.",
+      title: isSpanish ? "Apoyo jurídico en tribunales y organismos públicos" : "Apoio jurídico em tribunais e órgãos públicos",
+      description: isSpanish ? "Representación y asistencia jurídica especializada en procedimientos judiciales y administrativos." : "Representação e assistência jurídica especializada em processos judiciais e administrativos.",
       icon: Briefcase,
       color: "sky"
     },
     {
-      title: "Consultoria e mediação de conflitos",
-      description: "Resolução pacífica de disputas através de mediação especializada e consultoria jurídica.",
+      title: isSpanish ? "Consultoría y mediación de conflictos" : "Consultoria e mediação de conflitos",
+      description: isSpanish ? "Resolución pacífica de disputas mediante mediación especializada y consultoría jurídica." : "Resolução pacífica de disputas através de mediação especializada e consultoria jurídica.",
       icon: Users,
       color: "sky"
     },
     {
-      title: "Fiscalização de contas públicas e processos administrativos",
-      description: "Monitorização e auditoria de processos públicos para garantir transparência e legalidade.",
+      title: isSpanish ? "Supervisión de cuentas públicas y procedimientos administrativos" : "Fiscalização de contas públicas e processos administrativos",
+      description: isSpanish ? "Monitorización y auditoría de procesos públicos para garantizar transparencia y legalidad." : "Monitorização e auditoria de processos públicos para garantir transparência e legalidade.",
       icon: FolderOpen,
       color: "sky"
     },
     {
-      title: "Coordenação e execução de projetos de interesse público",
-      description: "Desenvolvimento e implementação de iniciativas que beneficiam a comunidade.",
+      title: isSpanish ? "Coordinación y ejecución de proyectos de interés público" : "Coordenação e execução de projetos de interesse público",
+      description: isSpanish ? "Desarrollo e implementación de iniciativas que benefician a la comunidad." : "Desenvolvimento e implementação de iniciativas que beneficiam a comunidade.",
       icon: Heart,
       color: "sky"
     },
     {
-      title: "Formação e informação jurídica acessíveis",
-      description: "Programas educativos sobre direitos fundamentais e cidadania para todos.",
+      title: isSpanish ? "Formación e información jurídica accesibles" : "Formação e informação jurídica acessíveis",
+      description: isSpanish ? "Programas educativos sobre derechos fundamentales y ciudadanía para todos." : "Programas educativos sobre direitos fundamentais e cidadania para todos.",
       icon: Newspaper,
       color: "sky"
     }
@@ -517,7 +645,7 @@ function ServicesPage() {
   return (
     <div className="py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <PageHeader title="Serviços ao Associado" subtitle="Conheça como podemos ajudá-lo" />
+        <PageHeader title={isSpanish ? 'Servicios al Socio' : 'Serviços ao Associado'} subtitle={isSpanish ? 'Conozca cómo podemos ayudarle' : 'Conheça como podemos ajudá-lo'} />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((service, index) => {
@@ -539,30 +667,34 @@ function ServicesPage() {
   );
 }
 
+// ===== Page: Areas =====
 function AreasPage() {
+  const { locale } = useLanguage();
+  const isSpanish = locale === 'es';
+
   const areas = [
-    { name: "Consultoria Jurídica & Conciliação", icon: Handshake },
-    { name: "Administrativo e Fiscal", icon: Calculator },
-    { name: "Cível", icon: Scale },
-    { name: "Compliance e LGPD", icon: Shield },
-    { name: "Direito do Consumidor", icon: ShoppingCart },
-    { name: "Criminal", icon: Gavel },
-    { name: "Desportivo", icon: Trophy },
-    { name: "Empresarial", icon: Building },
-    { name: "Família", icon: Baby },
-    { name: "Mediação & Arbitragem", icon: Handshake },
-    { name: "Imigração", icon: Plane },
-    { name: "Imobiliário", icon: HomeIcon },
-    { name: "Tecnologia & Sistemas de Informação", icon: Laptop },
-    { name: "Trabalho", icon: HardHat },
-    { name: "Relações Governamentais & Cooperativismo", icon: Users2 },
-    { name: "Segurança Social", icon: PiggyBank }
+    { name: isSpanish ? "Consultoría Jurídica y Conciliación" : "Consultoria Jurídica & Conciliação", icon: Handshake },
+    { name: isSpanish ? "Administrativo y Fiscal" : "Administrativo e Fiscal", icon: Calculator },
+    { name: isSpanish ? "Civil" : "Cível", icon: Scale },
+    { name: isSpanish ? "Compliance y RGPD" : "Compliance e LGPD", icon: Shield },
+    { name: isSpanish ? "Derecho del Consumidor" : "Direito do Consumidor", icon: ShoppingCart },
+    { name: isSpanish ? "Penal" : "Criminal", icon: Gavel },
+    { name: isSpanish ? "Deportivo" : "Desportivo", icon: Trophy },
+    { name: isSpanish ? "Empresarial" : "Empresarial", icon: Building },
+    { name: isSpanish ? "Familia" : "Família", icon: Baby },
+    { name: isSpanish ? "Mediación y Arbitraje" : "Mediação & Arbitragem", icon: Handshake },
+    { name: isSpanish ? "Inmigración" : "Imigração", icon: Plane },
+    { name: isSpanish ? "Inmobiliario" : "Imobiliário", icon: HomeIcon },
+    { name: isSpanish ? "Tecnología y Sistemas de Información" : "Tecnologia & Sistemas de Informação", icon: Laptop },
+    { name: isSpanish ? "Trabajo" : "Trabalho", icon: HardHat },
+    { name: isSpanish ? "Relaciones Gubernamentales y Cooperativismo" : "Relações Governamentais & Cooperativismo", icon: Users2 },
+    { name: isSpanish ? "Seguridad Social" : "Segurança Social", icon: PiggyBank }
   ];
 
   return (
     <div className="py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <PageHeader title="Áreas de Atuação Jurídica" subtitle="Especialidades jurídicas em que atuamos" />
+        <PageHeader title={isSpanish ? 'Áreas de Actuación Jurídica' : 'Áreas de Atuação Jurídica'} subtitle={isSpanish ? 'Especialidades jurídicas en las que actuamos' : 'Especialidades jurídicas em que atuamos'} />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {areas.map((area, index) => {
@@ -582,24 +714,28 @@ function AreasPage() {
   );
 }
 
+// ===== Page: Projects =====
 function ProjectsPage() {
+  const { locale } = useLanguage();
+  const isSpanish = locale === 'es';
+
   const projects = [
     {
-      title: "Justiça Digital",
-      description: "Plataforma online para facilitar o acesso à justiça através de tecnologia.",
-      status: "Em andamento",
+      title: isSpanish ? "Justicia Digital" : "Justiça Digital",
+      description: isSpanish ? "Plataforma en línea para facilitar el acceso a la justicia mediante la tecnología." : "Plataforma online para facilitar o acesso à justiça através de tecnologia.",
+      status: isSpanish ? "En curso" : "Em andamento",
       progress: 75
     },
     {
-      title: "Educação Jurídica Comunitária",
-      description: "Programa de educação em direitos para comunidades carentes.",
-      status: "Concluído",
+      title: isSpanish ? "Educación Jurídica Comunitaria" : "Educação Jurídica Comunitária",
+      description: isSpanish ? "Programa de educación en derechos para comunidades vulnerables." : "Programa de educação em direitos para comunidades carentes.",
+      status: isSpanish ? "Completado" : "Concluído",
       progress: 100
     },
     {
-      title: "Centro de Mediação",
-      description: "Criação de centro especializado em mediação de conflitos.",
-      status: "Planejamento",
+      title: isSpanish ? "Centro de Mediación" : "Centro de Mediação",
+      description: isSpanish ? "Creación de un centro especializado en mediación de conflictos." : "Criação de centro especializado em mediação de conflitos.",
+      status: isSpanish ? "Planificación" : "Planejamento",
       progress: 25
     }
   ];
@@ -607,7 +743,7 @@ function ProjectsPage() {
   return (
     <div className="py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <PageHeader title="Nossos Projetos" subtitle="Iniciativas que transformam a sociedade" />
+        <PageHeader title={isSpanish ? 'Nuestros Proyectos' : 'Nossos Projetos'} subtitle={isSpanish ? 'Iniciativas que transforman la sociedad' : 'Iniciativas que transformam a sociedade'} />
 
         <div className="space-y-8">
           {projects.map((project, index) => (
@@ -615,8 +751,8 @@ function ProjectsPage() {
               <div className="flex justify-between items-start mb-4">
                 <h3 className="text-2xl font-bold text-gray-900">{project.title}</h3>
                 <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  project.status === 'Concluído' ? 'bg-green-100 text-green-800' :
-                  project.status === 'Em andamento' ? 'bg-sky-100 text-sky-800' :
+                  project.status === (isSpanish ? 'Completado' : 'Concluído') ? 'bg-green-100 text-green-800' :
+                  project.status === (isSpanish ? 'En curso' : 'Em andamento') ? 'bg-sky-100 text-sky-800' :
                   'bg-yellow-100 text-yellow-800'
                 }`}>
                   {project.status}
@@ -629,7 +765,7 @@ function ProjectsPage() {
                   style={{ width: `${project.progress}%` }}
                 ></div>
               </div>
-              <p className="text-sm text-sky-500 mt-2">{project.progress}% concluído</p>
+              <p className="text-sm text-sky-500 mt-2">{project.progress}% {isSpanish ? 'completado' : 'concluído'}</p>
             </div>
           ))}
         </div>
@@ -638,59 +774,63 @@ function ProjectsPage() {
   );
 }
 
+// ===== Page: News =====
 function NewsPage() {
+  const { locale } = useLanguage();
+  const isSpanish = locale === 'es';
+
   const news = [
     {
-      title: "Injustiças da CPAS: Denúncias e Irregularidades",
-      date: "Janeiro, 2025",
-      summary: "Documentação de casos de má gestão e irregularidades na Caixa de Previdência dos Advogados e Solicitadores.",
-      category: "Denúncias",
-      content: "A CPAS tem sido alvo de múltiplas denúncias relacionadas com a gestão de fundos de pensões e benefícios dos seus associados. Casos documentados incluem atrasos no pagamento de pensões, falta de transparência na gestão financeira e dificuldades no acesso aos direitos dos beneficiários."
+      title: isSpanish ? "Injusticias de la CPAS: denuncias e irregularidades" : "Injustiças da CPAS: Denúncias e Irregularidades",
+      date: isSpanish ? "Enero, 2025" : "Janeiro, 2025",
+      summary: isSpanish ? "Documentación de casos de mala gestión e irregularidades en la Caixa de Previdência dos Advogados e Solicitadores." : "Documentação de casos de má gestão e irregularidades na Caixa de Previdência dos Advogados e Solicitadores.",
+      category: isSpanish ? "Denuncias" : "Denúncias",
+      content: isSpanish ? "La CPAS ha sido objeto de múltiples denuncias relacionadas con la gestión de fondos de pensiones y beneficios de sus asociados. Los casos documentados incluyen retrasos en el pago de pensiones, falta de transparencia financiera y dificultades en el acceso a los derechos de los beneficiarios." : "A CPAS tem sido alvo de múltiplas denúncias relacionadas com a gestão de fundos de pensões e benefícios dos seus associados. Casos documentados incluem atrasos no pagamento de pensões, falta de transparência na gestão financeira e dificuldades no acesso aos direitos dos beneficiários."
     },
     {
-      title: "Problemas Estruturais na Gestão da CPAS",
-      date: "Dezembro, 2024",
-      summary: "Análise dos principais problemas identificados na estrutura organizacional e processos da CPAS.",
-      category: "Análise",
-      content: "Foram identificados problemas sistemáticos na gestão da CPAS, incluindo falta de auditoria independente, processos burocráticos excessivos e ausência de mecanismos eficazes de reclamação para os associados."
+      title: isSpanish ? "Problemas estructurales en la gestión de la CPAS" : "Problemas Estruturais na Gestão da CPAS",
+      date: isSpanish ? "Diciembre, 2024" : "Dezembro, 2024",
+      summary: isSpanish ? "Análisis de los principales problemas identificados en la estructura organizativa y en los procesos de la CPAS." : "Análise dos principais problemas identificados na estrutura organizacional e processos da CPAS.",
+      category: isSpanish ? "Análisis" : "Análise",
+      content: isSpanish ? "Se identificaron problemas sistemáticos en la gestión de la CPAS, incluida la falta de auditoría independiente, procedimientos burocráticos excesivos y la ausencia de mecanismos eficaces de reclamación para los asociados." : "Foram identificados problemas sistemáticos na gestão da CPAS, incluindo falta de auditoria independente, processos burocráticos excessivos e ausência de mecanismos eficazes de reclamação para os associados."
     },
     {
-      title: "Direitos dos Associados da CPAS",
-      date: "Novembro, 2024",
-      summary: "Guia completo sobre os direitos dos associados e como proceder em caso de violação dos mesmos.",
-      category: "Direitos",
-      content: "Os associados da CPAS têm direito a informação transparente sobre a gestão dos seus fundos, acesso atempado aos benefícios e um processo justo de reclamação. Este guia detalha como exercer estes direitos e onde procurar ajuda."
+      title: isSpanish ? "Derechos de los asociados de la CPAS" : "Direitos dos Associados da CPAS",
+      date: isSpanish ? "Noviembre, 2024" : "Novembro, 2024",
+      summary: isSpanish ? "Guía completa sobre los derechos de los asociados y cómo actuar en caso de vulneración de los mismos." : "Guia completo sobre os direitos dos associados e como proceder em caso de violação dos mesmos.",
+      category: isSpanish ? "Derechos" : "Direitos",
+      content: isSpanish ? "Los asociados de la CPAS tienen derecho a información transparente sobre la gestión de sus fondos, acceso oportuno a las prestaciones y un proceso justo de reclamación. Esta guía detalla cómo ejercer estos derechos y dónde buscar ayuda." : "Os associados da CPAS têm direito a informação transparente sobre a gestão dos seus fundos, acesso atempado aos benefícios e um processo justo de reclamação. Este guia detalha como exercer estes direitos e onde procurar ajuda."
     },
     {
-      title: "Casos de Sucesso: Recuperação de Benefícios",
-      date: "Outubro, 2024",
-      summary: "Exemplos de casos onde foi possível recuperar benefícios negados ou atrasados pela CPAS.",
-      category: "Casos de Sucesso",
-      content: "Através de ação legal adequada e persistência, vários associados conseguiram recuperar benefícios que lhes tinham sido negados ou atrasados pela CPAS. Estes casos demonstram a importância de conhecer os seus direitos e procurar apoio jurídico especializado."
+      title: isSpanish ? "Casos de éxito: recuperación de prestaciones" : "Casos de Sucesso: Recuperação de Benefícios",
+      date: isSpanish ? "Octubre, 2024" : "Outubro, 2024",
+      summary: isSpanish ? "Ejemplos de casos en los que fue posible recuperar prestaciones denegadas o retrasadas por la CPAS." : "Exemplos de casos onde foi possível recuperar benefícios negados ou atrasados pela CPAS.",
+      category: isSpanish ? "Casos de Éxito" : "Casos de Sucesso",
+      content: isSpanish ? "A través de una acción legal adecuada y de la persistencia, varios asociados lograron recuperar prestaciones que les habían sido denegadas o retrasadas por la CPAS. Estos casos demuestran la importancia de conocer sus derechos y buscar apoyo jurídico especializado." : "Através de ação legal adequada e persistência, vários associados conseguiram recuperar benefícios que lhes tinham sido negados ou atrasados pela CPAS. Estes casos demonstram a importância de conhecer os seus direitos e procurar apoio jurídico especializado."
     },
     {
-      title: "Reforma do Sistema de Previdência dos Advogados",
-      date: "Setembro, 2024",
-      summary: "Propostas para reforma estrutural do sistema de previdência para advogados e solicitadores.",
-      category: "Propostas",
-      content: "É urgente uma reforma profunda do sistema de previdência dos advogados, incluindo maior transparência, auditoria independente, simplificação de processos e criação de mecanismos eficazes de proteção dos direitos dos associados."
+      title: isSpanish ? "Reforma del sistema de previsión de los abogados" : "Reforma do Sistema de Previdência dos Advogados",
+      date: isSpanish ? "Septiembre, 2024" : "Setembro, 2024",
+      summary: isSpanish ? "Propuestas para una reforma estructural del sistema de previsión para abogados y procuradores." : "Propostas para reforma estrutural do sistema de previdência para advogados e solicitadores.",
+      category: isSpanish ? "Propuestas" : "Propostas",
+      content: isSpanish ? "Es urgente una reforma profunda del sistema de previsión de los abogados, que incluya mayor transparencia, auditoría independiente, simplificación de procesos y creación de mecanismos eficaces de protección de los derechos de los asociados." : "É urgente uma reforma profunda do sistema de previdência dos advogados, incluindo maior transparência, auditoria independente, simplificação de processos e criação de mecanismos eficazes de proteção dos direitos dos associados."
     }
   ];
 
   return (
     <div className="py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <PageHeader title="Notícias" subtitle="Informações sobre injustiças da CPAS e direitos dos associados" />
+        <PageHeader title={isSpanish ? 'Noticias' : 'Notícias'} subtitle={isSpanish ? 'Información sobre las injusticias de la CPAS y los derechos de los asociados' : 'Informações sobre injustiças da CPAS e direitos dos associados'} />
 
         <div className="space-y-8">
           {news.map((article, index) => (
             <article key={index} className="bg-white rounded-lg shadow-lg p-8 hover:shadow-xl transition-shadow">
               <div className="flex justify-between items-start mb-4">
                 <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  article.category === 'Denúncias' ? 'bg-red-100 text-red-800' :
-                  article.category === 'Análise' ? 'bg-blue-100 text-blue-800' :
-                  article.category === 'Direitos' ? 'bg-green-100 text-green-800' :
-                  article.category === 'Casos de Sucesso' ? 'bg-purple-100 text-purple-800' :
+                  article.category === (isSpanish ? 'Denuncias' : 'Denúncias') ? 'bg-red-100 text-red-800' :
+                  article.category === (isSpanish ? 'Análisis' : 'Análise') ? 'bg-blue-100 text-blue-800' :
+                  article.category === (isSpanish ? 'Derechos' : 'Direitos') ? 'bg-green-100 text-green-800' :
+                  article.category === (isSpanish ? 'Casos de Éxito' : 'Casos de Sucesso') ? 'bg-purple-100 text-purple-800' :
                   'bg-sky-100 text-sky-800'
                 }`}>
                   {article.category}
@@ -702,7 +842,7 @@ function NewsPage() {
               <p className="text-gray-700 text-justified">{article.content}</p>
               <div className="mt-6 pt-4 border-t border-gray-200">
                 <p className="text-sm text-sky-600">
-                  <strong>Precisa de ajuda com questões relacionadas à CPAS?</strong> Entre em contacto connosco para orientação jurídica especializada.
+                  <strong>{isSpanish ? '¿Necesita ayuda con cuestiones relacionadas con la CPAS?' : 'Precisa de ajuda com questões relacionadas à CPAS?'}</strong> {isSpanish ? 'Póngase en contacto con nosotros para recibir orientación jurídica especializada.' : 'Entre em contacto connosco para orientação jurídica especializada.'}
                 </p>
               </div>
             </article>
@@ -713,10 +853,9 @@ function NewsPage() {
           <div className="flex items-start space-x-3">
             <AlertTriangle className="w-6 h-6 text-yellow-600 flex-shrink-0 mt-0.5" />
             <div>
-              <h3 className="font-semibold text-yellow-800 mb-2">Tem uma situação similar?</h3>
+              <h3 className="font-semibold text-yellow-800 mb-2">{isSpanish ? '¿Tiene una situación similar?' : 'Tem uma situação similar?'}</h3>
               <p className="text-yellow-700 text-justified mb-4">
-                Se está a enfrentar problemas com a CPAS ou outras entidades, não hesite em contactar-nos. 
-                Oferecemos consultoria jurídica especializada e apoio na defesa dos seus direitos.
+                {isSpanish ? 'Si está afrontando problemas con la CPAS u otras entidades, no dude en ponerse en contacto con nosotros. Ofrecemos consultoría jurídica especializada y apoyo en la defensa de sus derechos.' : 'Se está a enfrentar problemas com a CPAS ou outras entidades, não hesite em contactar-nos. Oferecemos consultoria jurídica especializada e apoio na defesa dos seus direitos.'}
               </p>
               <div className="flex space-x-4">
                 <a href="mailto:contato@vainaai.pt" className="text-yellow-800 font-medium hover:text-yellow-900">
@@ -734,7 +873,10 @@ function NewsPage() {
   );
 }
 
+// ===== Page: Join (Association Form) =====
 function JoinPage() {
+  const { locale } = useLanguage();
+  const isSpanish = locale === 'es';
   const sendAssociationForm = (payload: Record<string, unknown>) => submitForm("/api/association", payload);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -757,7 +899,7 @@ function JoinPage() {
     e.preventDefault();
     
     if (!formData.agreeTerms) {
-      toast.error('Deve concordar com os termos do Estatuto Social para prosseguir.');
+      toast.error(isSpanish ? 'Debe aceptar los términos del Estatuto Social para continuar.' : 'Deve concordar com os termos do Estatuto Social para prosseguir.');
       return;
     }
     
@@ -779,7 +921,7 @@ function JoinPage() {
         memberType: formData.memberType,
       });
       
-      toast.success('Formulário de associação enviado com sucesso! Entraremos em contacto em breve para finalizar o processo.');
+      toast.success(isSpanish ? '¡Formulario de asociación enviado con éxito! Nos pondremos en contacto en breve para finalizar el proceso.' : 'Formulário de associação enviado com sucesso! Entraremos em contacto em breve para finalizar o processo.');
       setFormData({
         fullName: '',
         documentType: '',
@@ -796,7 +938,7 @@ function JoinPage() {
         agreeTerms: false
       });
     } catch (error) {
-      toast.error('Erro ao enviar formulário. Tente novamente.');
+      toast.error(isSpanish ? 'Error al enviar el formulario. Inténtelo de nuevo.' : 'Erro ao enviar formulário. Tente novamente.');
       console.error('Erro:', error);
     } finally {
       setIsSubmitting(false);
@@ -806,16 +948,16 @@ function JoinPage() {
   return (
     <div className="py-16">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <PageHeader title="Associe-se" subtitle="Junte-se à nossa causa e faça a diferença" />
+        <PageHeader title={isSpanish ? 'Hazte Socio' : 'Associe-se'} subtitle={isSpanish ? 'Únase a nuestra causa y marque la diferencia' : 'Junte-se à nossa causa e faça a diferença'} />
 
         <div className="surface-card p-8">
             <div className="mb-8 text-center">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <UserPlus className="w-8 h-8 text-green-600" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Formulário de Associação</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">{isSpanish ? 'Formulario de Asociación' : 'Formulário de Associação'}</h2>
               <p className="text-sky-600 mb-6 text-justified">
-                Preencha o formulário abaixo para se tornar membro da AI - Associação contra as Injustiças.
+                {isSpanish ? 'Rellene el siguiente formulario para hacerse miembro de AI - Asociación contra las Injusticias.' : 'Preencha o formulário abaixo para se tornar membro da AI - Associação contra as Injustiças.'}
               </p>
             </div>
 
@@ -823,7 +965,7 @@ function JoinPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-sky-700 mb-2">
-                    Nome Completo <span className="text-red-500">*</span>
+                    {isSpanish ? 'Nombre Completo' : 'Nome Completo'} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -837,7 +979,7 @@ function JoinPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-sky-700 mb-2">
-                    Tipo de Documento <span className="text-red-500">*</span>
+                    {isSpanish ? 'Tipo de Documento' : 'Tipo de Documento'} <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={formData.documentType}
@@ -846,16 +988,16 @@ function JoinPage() {
                     required
                     disabled={isSubmitting}
                   >
-                    <option value="">Selecione o tipo</option>
-                    <option value="bi">Bilhete de Identidade</option>
-                    <option value="cc">Cartão de Cidadão</option>
+                    <option value="">{isSpanish ? 'Seleccione el tipo' : 'Selecione o tipo'}</option>
+                    <option value="bi">{isSpanish ? 'Documento de Identidad' : 'Bilhete de Identidade'}</option>
+                    <option value="cc">{isSpanish ? 'Tarjeta de Ciudadano' : 'Cartão de Cidadão'}</option>
                     <option value="passaporte">Passaporte</option>
                   </select>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-sky-700 mb-2">
-                    Número do Documento <span className="text-red-500">*</span>
+                    {isSpanish ? 'Número del Documento' : 'Número do Documento'} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -883,14 +1025,14 @@ function JoinPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-sky-700 mb-2">
-                    Morada <span className="text-red-500">*</span>
+                    {isSpanish ? 'Dirección' : 'Morada'} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={formData.address}
                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                    placeholder="Rua, número, andar..."
+                    placeholder={isSpanish ? 'Calle, número, piso...' : 'Rua, número, andar...'}
                     required
                     disabled={isSubmitting}
                   />
@@ -898,7 +1040,7 @@ function JoinPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-sky-700 mb-2">
-                    Código Postal <span className="text-red-500">*</span>
+                    {isSpanish ? 'Código Postal' : 'Código Postal'} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -913,7 +1055,7 @@ function JoinPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-sky-700 mb-2">
-                    Telemóvel <span className="text-red-500">*</span>
+                    {isSpanish ? 'Teléfono Móvil' : 'Telemóvel'} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="tel"
@@ -928,7 +1070,7 @@ function JoinPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-sky-700 mb-2">
-                    Correio Eletrónico <span className="text-red-500">*</span>
+                    {isSpanish ? 'Correo Electrónico' : 'Correio Eletrónico'} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="email"
@@ -942,7 +1084,7 @@ function JoinPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-sky-700 mb-2">
-                    Estado Civil <span className="text-red-500">*</span>
+                    {isSpanish ? 'Estado Civil' : 'Estado Civil'} <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={formData.maritalStatus}
@@ -951,18 +1093,18 @@ function JoinPage() {
                     required
                     disabled={isSubmitting}
                   >
-                    <option value="">Selecione</option>
-                    <option value="solteiro">Solteiro(a)</option>
-                    <option value="casado">Casado(a)</option>
-                    <option value="divorciado">Divorciado(a)</option>
-                    <option value="viuvo">Viúvo(a)</option>
-                    <option value="uniao_facto">União de Facto</option>
+                    <option value="">{isSpanish ? 'Seleccione' : 'Selecione'}</option>
+                    <option value="solteiro">{isSpanish ? 'Soltero(a)' : 'Solteiro(a)'}</option>
+                    <option value="casado">{isSpanish ? 'Casado(a)' : 'Casado(a)'}</option>
+                    <option value="divorciado">{isSpanish ? 'Divorciado(a)' : 'Divorciado(a)'}</option>
+                    <option value="viuvo">{isSpanish ? 'Viudo(a)' : 'Viúvo(a)'}</option>
+                    <option value="uniao_facto">{isSpanish ? 'Unión de Hecho' : 'União de Facto'}</option>
                   </select>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-sky-700 mb-2">
-                    Profissão <span className="text-red-500">*</span>
+                    {isSpanish ? 'Profesión' : 'Profissão'} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -976,7 +1118,7 @@ function JoinPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-sky-700 mb-2">
-                    Nacionalidade <span className="text-red-500">*</span>
+                    {isSpanish ? 'Nacionalidad' : 'Nacionalidade'} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -990,7 +1132,7 @@ function JoinPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-sky-700 mb-2">
-                    Tipo de Associação <span className="text-red-500">*</span>
+                    {isSpanish ? 'Tipo de Asociación' : 'Tipo de Associação'} <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={formData.memberType}
@@ -999,9 +1141,9 @@ function JoinPage() {
                     required
                     disabled={isSubmitting}
                   >
-                    <option value="">Selecione o tipo</option>
-                    <option value="cliente">Cliente</option>
-                    <option value="prestador">Prestador de Serviços</option>
+                    <option value="">{isSpanish ? 'Seleccione el tipo' : 'Selecione o tipo'}</option>
+                    <option value="cliente">{isSpanish ? 'Cliente' : 'Cliente'}</option>
+                    <option value="prestador">{isSpanish ? 'Prestador de Servicios' : 'Prestador de Serviços'}</option>
                   </select>
                 </div>
               </div>
@@ -1019,10 +1161,10 @@ function JoinPage() {
                   />
                   <div>
                     <label htmlFor="agreeTerms" className="text-sm text-sky-800 font-medium">
-                      Concordo com os termos <span className="text-red-500">*</span>
+                      {isSpanish ? 'Acepto los términos' : 'Concordo com os termos'} <span className="text-red-500">*</span>
                     </label>
                     <p className="text-sm text-sky-700 mt-2 text-justified">
-                      <strong>AVISO:</strong> Concorda com os termos do Estatuto Social da entidade e com o pagamento da taxa de adesão para associado efetivo, estando isento das jóias enquanto cliente ou prestador de serviços junto à AI, para fazer jus aos benefícios, serviços e valores aplicados na tabela de valores mínimos da entidade.
+                      <strong>{isSpanish ? 'AVISO:' : 'AVISO:'}</strong> {isSpanish ? 'Acepta los términos del Estatuto Social de la entidad y el pago de la cuota de adhesión para socio efectivo, quedando exento de las cuotas de entrada mientras sea cliente o prestador de servicios de la AI, para poder beneficiarse de las ventajas, servicios y valores aplicados en la tabla de valores mínimos de la entidad.' : 'Concorda com os termos do Estatuto Social da entidade e com o pagamento da taxa de adesão para associado efetivo, estando isento das jóias enquanto cliente ou prestador de serviços junto à AI, para fazer jus aos benefícios, serviços e valores aplicados na tabela de valores mínimos da entidade.'}
                     </p>
                   </div>
                 </div>
@@ -1033,7 +1175,7 @@ function JoinPage() {
                 disabled={isSubmitting}
                 className="w-full bg-sky-600 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:bg-sky-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? 'Enviando...' : 'Enviar Formulário de Associação'}
+                {isSubmitting ? (isSpanish ? 'Enviando...' : 'Enviando...') : (isSpanish ? 'Enviar Formulario de Asociación' : 'Enviar Formulário de Associação')}
               </button>
             </form>
         </div>
@@ -1042,7 +1184,10 @@ function JoinPage() {
   );
 }
 
+// ===== Page: Report (Complaints Form) =====
 function ReportPage() {
+  const { locale } = useLanguage();
+  const isSpanish = locale === 'es';
   const sendReportForm = (payload: Record<string, unknown>) => submitForm("/api/report", payload);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -1058,7 +1203,7 @@ function ReportPage() {
     
     // Validação: se não for anônimo, telefone é obrigatório
     if (!formData.anonymous && !formData.phone.trim()) {
-      toast.error('Para prosseguir com a consultoria, é necessário fornecer um telefone de contacto.');
+      toast.error(isSpanish ? 'Para continuar con la consultoría, es necesario proporcionar un teléfono de contacto.' : 'Para prosseguir com a consultoria, é necessário fornecer um telefone de contacto.');
       return;
     }
     
@@ -1073,10 +1218,10 @@ function ReportPage() {
         anonymous: formData.anonymous,
       });
       
-      toast.success('Denúncia enviada com sucesso! Obrigado por nos ajudar a combater as injustiças.');
+      toast.success(isSpanish ? '¡Denuncia enviada con éxito! Gracias por ayudarnos a combatir las injusticias.' : 'Denúncia enviada com sucesso! Obrigado por nos ajudar a combater as injustiças.');
       setFormData({ type: '', description: '', location: '', phone: '', anonymous: false });
     } catch (error) {
-      toast.error('Erro ao enviar denúncia. Tente novamente.');
+      toast.error(isSpanish ? 'Error al enviar la denuncia. Inténtelo de nuevo.' : 'Erro ao enviar denúncia. Tente novamente.');
       console.error('Erro:', error);
     } finally {
       setIsSubmitting(false);
@@ -1086,17 +1231,16 @@ function ReportPage() {
   return (
     <div className="py-16">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <PageHeader title="Canal de Denúncias" subtitle="Reporte irregularidades de forma segura e confidencial" />
+        <PageHeader title={isSpanish ? 'Canal de Denuncias' : 'Canal de Denúncias'} subtitle={isSpanish ? 'Comunique irregularidades de forma segura y confidencial' : 'Reporte irregularidades de forma segura e confidencial'} />
 
         <div className="surface-card p-8">
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-8">
             <div className="flex items-start space-x-3">
               <AlertTriangle className="w-6 h-6 text-yellow-600 flex-shrink-0 mt-0.5" />
               <div>
-                <h3 className="font-semibold text-yellow-800">Informação Importante</h3>
+                <h3 className="font-semibold text-yellow-800">{isSpanish ? 'Información Importante' : 'Informação Importante'}</h3>
                 <p className="text-yellow-700 text-sm mt-1 text-justified">
-                  Todas as denúncias são tratadas com total confidencialidade. 
-                  Você pode optar por permanecer anônimo.
+                  {isSpanish ? 'Todas las denuncias se tratan con total confidencialidad. Puede optar por permanecer en el anonimato.' : 'Todas as denúncias são tratadas com total confidencialidade. Você pode optar por permanecer anônimo.'}
                 </p>
               </div>
             </div>
@@ -1105,7 +1249,7 @@ function ReportPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-sky-700 mb-2">
-                Tipo de Irregularidade
+                {isSpanish ? 'Tipo de Irregularidad' : 'Tipo de Irregularidade'}
               </label>
               <select
                 value={formData.type}
@@ -1114,25 +1258,25 @@ function ReportPage() {
                 required
                 disabled={isSubmitting}
               >
-                <option value="">Selecione o tipo</option>
-                <option value="corruption">Corrupção</option>
-                <option value="discrimination">Discriminação</option>
-                <option value="abuse">Abuso de Poder</option>
-                <option value="fraud">Fraude</option>
-                <option value="other">Outro</option>
+                <option value="">{isSpanish ? 'Seleccione el tipo' : 'Selecione o tipo'}</option>
+                <option value="corruption">{isSpanish ? 'Corrupción' : 'Corrupção'}</option>
+                <option value="discrimination">{isSpanish ? 'Discriminación' : 'Discriminação'}</option>
+                <option value="abuse">{isSpanish ? 'Abuso de Poder' : 'Abuso de Poder'}</option>
+                <option value="fraud">{isSpanish ? 'Fraude' : 'Fraude'}</option>
+                <option value="other">{isSpanish ? 'Otro' : 'Outro'}</option>
               </select>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-sky-700 mb-2">
-                Descrição Detalhada
+                {isSpanish ? 'Descripción Detallada' : 'Descrição Detalhada'}
               </label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows={6}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                placeholder="Descreva a situação com o máximo de detalhes possível..."
+                placeholder={isSpanish ? 'Describa la situación con el mayor detalle posible...' : 'Descreva a situação com o máximo de detalhes possível...'}
                 required
                 disabled={isSubmitting}
               />
@@ -1140,14 +1284,14 @@ function ReportPage() {
 
             <div>
               <label className="block text-sm font-medium text-sky-700 mb-2">
-                Local da Ocorrência
+                {isSpanish ? 'Lugar de los Hechos' : 'Local da Ocorrência'}
               </label>
               <input
                 type="text"
                 value={formData.location}
                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                placeholder="Cidade, bairro, instituição..."
+                placeholder={isSpanish ? 'Ciudad, barrio, institución...' : 'Cidade, bairro, instituição...'}
                 required
                 disabled={isSubmitting}
               />
@@ -1163,7 +1307,7 @@ function ReportPage() {
                 disabled={isSubmitting}
               />
               <label htmlFor="anonymous" className="text-sm text-sky-700">
-                Desejo permanecer anônimo
+                {isSpanish ? 'Deseo permanecer en el anonimato' : 'Desejo permanecer anônimo'}
               </label>
             </div>
 
@@ -1173,14 +1317,13 @@ function ReportPage() {
                 <div className="flex items-start space-x-3">
                   <Info className="w-6 h-6 text-sky-600 flex-shrink-0 mt-0.5" />
                   <div>
-                    <h4 className="font-semibold text-sky-800 mb-2">Denúncia Anônima</h4>
+                    <h4 className="font-semibold text-sky-800 mb-2">{isSpanish ? 'Denuncia Anónima' : 'Denúncia Anônima'}</h4>
                     <p className="text-sky-700 text-sm mb-3 text-justified">
-                      Recebemos a sua denúncia e iremos analisá-la. Para efetivar a nossa ajuda e prestar 
-                      serviços de consultoria, será necessário fornecer um contacto telefónico posteriormente.
+                      {isSpanish ? 'Hemos recibido su denuncia y la analizaremos. Para hacer efectiva nuestra ayuda y prestar servicios de consultoría, será necesario facilitar posteriormente un contacto telefónico.' : 'Recebemos a sua denúncia e iremos analisá-la. Para efetivar a nossa ajuda e prestar serviços de consultoria, será necessário fornecer um contacto telefónico posteriormente.'}
                     </p>
                     <div className="flex items-center space-x-2 text-sky-700 text-sm">
                       <Shield className="w-4 h-4" />
-                      <span className="font-medium">Garantimos total sigilo e proteção dos seus dados pessoais</span>
+                      <span className="font-medium">{isSpanish ? 'Garantizamos total confidencialidad y protección de sus datos personales' : 'Garantimos total sigilo e proteção dos seus dados pessoais'}</span>
                     </div>
                   </div>
                 </div>
@@ -1191,7 +1334,7 @@ function ReportPage() {
             {!formData.anonymous && (
               <div>
                 <label className="block text-sm font-medium text-sky-700 mb-2">
-                  Telefone de Contacto <span className="text-red-500">*</span>
+                  {isSpanish ? 'Teléfono de Contacto' : 'Telefone de Contacto'} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="tel"
@@ -1203,7 +1346,7 @@ function ReportPage() {
                   disabled={isSubmitting}
                 />
                 <p className="text-sm text-sky-600 mt-1 text-justified">
-                  Necessário para prosseguir com a consultoria e registo do serviço.
+                  {isSpanish ? 'Necesario para continuar con la consultoría y el registro del servicio.' : 'Necessário para prosseguir com a consultoria e registo do serviço.'}
                 </p>
               </div>
             )}
@@ -1213,7 +1356,7 @@ function ReportPage() {
               disabled={isSubmitting}
               className="w-full bg-red-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? 'Enviando...' : 'Enviar Denúncia'}
+              {isSubmitting ? 'Enviando...' : (isSpanish ? 'Enviar Denuncia' : 'Enviar Denúncia')}
             </button>
           </form>
         </div>
@@ -1222,7 +1365,10 @@ function ReportPage() {
   );
 }
 
+// ===== Page: Volunteers =====
 function VolunteersPage() {
+  const { locale } = useLanguage();
+  const isSpanish = locale === 'es';
   const sendVolunteerForm = (payload: Record<string, unknown>) => submitForm("/api/volunteer", payload);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -1249,10 +1395,10 @@ function VolunteersPage() {
         experience: formData.experience,
       });
       
-      toast.success('Inscrição enviada com sucesso! Entraremos em contato em breve.');
+      toast.success(isSpanish ? '¡Inscripción enviada con éxito! Nos pondremos en contacto en breve.' : 'Inscrição enviada com sucesso! Entraremos em contato em breve.');
       setFormData({ name: '', email: '', phone: '', area: '', availability: '', experience: '' });
     } catch (error) {
-      toast.error('Erro ao enviar inscrição. Tente novamente.');
+      toast.error(isSpanish ? 'Error al enviar la inscripción. Inténtelo de nuevo.' : 'Erro ao enviar inscrição. Tente novamente.');
       console.error('Erro:', error);
     } finally {
       setIsSubmitting(false);
@@ -1262,11 +1408,11 @@ function VolunteersPage() {
   return (
     <div className="py-16">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <PageHeader title="Programa de Voluntários" subtitle="Faça parte da mudança que você quer ver no mundo" />
+        <PageHeader title={isSpanish ? 'Programa de Voluntarios' : 'Programa de Voluntários'} subtitle={isSpanish ? 'Forme parte del cambio que quiere ver en el mundo' : 'Faça parte da mudança que você quer ver no mundo'} />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Por que ser Voluntário?</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">{isSpanish ? '¿Por qué ser voluntario?' : 'Por que ser Voluntário?'}</h2>
             
             <div className="space-y-6">
               <div className="flex items-start space-x-4">
@@ -1274,8 +1420,8 @@ function VolunteersPage() {
                   <Heart className="w-6 h-6 text-sky-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Impacto Social</h3>
-                  <p className="text-sky-600 text-justified">Contribua diretamente para a construção de uma sociedade mais justa.</p>
+                  <h3 className="font-semibold text-gray-900 mb-2">{isSpanish ? 'Impacto Social' : 'Impacto Social'}</h3>
+                  <p className="text-sky-600 text-justified">{isSpanish ? 'Contribuya directamente a la construcción de una sociedad más justa.' : 'Contribua diretamente para a construção de uma sociedade mais justa.'}</p>
                 </div>
               </div>
               
@@ -1285,7 +1431,7 @@ function VolunteersPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-2">Networking</h3>
-                  <p className="text-sky-600 text-justified">Conecte-se com pessoas que compartilham dos mesmos valores.</p>
+                  <p className="text-sky-600 text-justified">{isSpanish ? 'Conéctese con personas que comparten los mismos valores.' : 'Conecte-se com pessoas que compartilham dos mesmos valores.'}</p>
                 </div>
               </div>
               
@@ -1294,31 +1440,31 @@ function VolunteersPage() {
                   <Briefcase className="w-6 h-6 text-purple-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Desenvolvimento</h3>
-                  <p className="text-sky-600 text-justified">Desenvolva novas habilidades e ganhe experiência valiosa.</p>
+                  <h3 className="font-semibold text-gray-900 mb-2">{isSpanish ? 'Desarrollo' : 'Desenvolvimento'}</h3>
+                  <p className="text-sky-600 text-justified">{isSpanish ? 'Desarrolle nuevas habilidades y adquiera experiencia valiosa.' : 'Desenvolva novas habilidades e ganhe experiência valiosa.'}</p>
                 </div>
               </div>
             </div>
 
             <div className="mt-8 bg-gray-50 rounded-lg p-6">
-              <h3 className="font-semibold text-gray-900 mb-4">Áreas de Atuação</h3>
+              <h3 className="font-semibold text-gray-900 mb-4">{isSpanish ? 'Áreas de Actuación' : 'Áreas de Atuação'}</h3>
               <ul className="space-y-2 text-sky-600">
-                <li>• Atendimento ao público</li>
-                <li>• Pesquisa jurídica</li>
-                <li>• Comunicação e marketing</li>
-                <li>• Organização de eventos</li>
-                <li>• Apoio administrativo</li>
-                <li>• Tradução e interpretação</li>
+                <li>• {isSpanish ? 'Atención al público' : 'Atendimento ao público'}</li>
+                <li>• {isSpanish ? 'Investigación jurídica' : 'Pesquisa jurídica'}</li>
+                <li>• {isSpanish ? 'Comunicación y marketing' : 'Comunicação e marketing'}</li>
+                <li>• {isSpanish ? 'Organización de eventos' : 'Organização de eventos'}</li>
+                <li>• {isSpanish ? 'Apoyo administrativo' : 'Apoio administrativo'}</li>
+                <li>• {isSpanish ? 'Traducción e interpretación' : 'Tradução e interpretação'}</li>
               </ul>
             </div>
           </div>
 
           <div className="surface-card p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Inscreva-se como Voluntário</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">{isSpanish ? 'Inscríbase como Voluntario' : 'Inscreva-se como Voluntário'}</h2>
             
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-sky-700 mb-1">Nome Completo</label>
+                <label className="block text-sm font-medium text-sky-700 mb-1">{isSpanish ? 'Nombre Completo' : 'Nome Completo'}</label>
                 <input
                   type="text"
                   value={formData.name}
@@ -1342,7 +1488,7 @@ function VolunteersPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-sky-700 mb-1">Telefone</label>
+                <label className="block text-sm font-medium text-sky-700 mb-1">{isSpanish ? 'Teléfono' : 'Telefone'}</label>
                 <input
                   type="tel"
                   value={formData.phone}
@@ -1354,7 +1500,7 @@ function VolunteersPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-sky-700 mb-1">Área de Interesse</label>
+                <label className="block text-sm font-medium text-sky-700 mb-1">{isSpanish ? 'Área de Interés' : 'Área de Interesse'}</label>
                 <select
                   value={formData.area}
                   onChange={(e) => setFormData({ ...formData, area: e.target.value })}
@@ -1362,18 +1508,18 @@ function VolunteersPage() {
                   required
                   disabled={isSubmitting}
                 >
-                  <option value="">Selecione uma área</option>
-                  <option value="atendimento">Atendimento ao Público</option>
-                  <option value="pesquisa">Pesquisa Jurídica</option>
-                  <option value="comunicacao">Comunicação</option>
-                  <option value="eventos">Organização de Eventos</option>
-                  <option value="administrativo">Apoio Administrativo</option>
-                  <option value="traducao">Tradução</option>
+                  <option value="">{isSpanish ? 'Seleccione un área' : 'Selecione uma área'}</option>
+                  <option value="atendimento">{isSpanish ? 'Atención al Público' : 'Atendimento ao Público'}</option>
+                  <option value="pesquisa">{isSpanish ? 'Investigación Jurídica' : 'Pesquisa Jurídica'}</option>
+                  <option value="comunicacao">{isSpanish ? 'Comunicación' : 'Comunicação'}</option>
+                  <option value="eventos">{isSpanish ? 'Organización de Eventos' : 'Organização de Eventos'}</option>
+                  <option value="administrativo">{isSpanish ? 'Apoyo Administrativo' : 'Apoio Administrativo'}</option>
+                  <option value="traducao">{isSpanish ? 'Traducción' : 'Tradução'}</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-sky-700 mb-1">Disponibilidade</label>
+                <label className="block text-sm font-medium text-sky-700 mb-1">{isSpanish ? 'Disponibilidad' : 'Disponibilidade'}</label>
                 <select
                   value={formData.availability}
                   onChange={(e) => setFormData({ ...formData, availability: e.target.value })}
@@ -1381,23 +1527,23 @@ function VolunteersPage() {
                   required
                   disabled={isSubmitting}
                 >
-                  <option value="">Selecione sua disponibilidade</option>
-                  <option value="manhã">Manhã</option>
-                  <option value="tarde">Tarde</option>
-                  <option value="noite">Noite</option>
-                  <option value="fins-semana">Fins de Semana</option>
-                  <option value="flexivel">Horário Flexível</option>
+                  <option value="">{isSpanish ? 'Seleccione su disponibilidad' : 'Selecione sua disponibilidade'}</option>
+                  <option value="manhã">{isSpanish ? 'Mañana' : 'Manhã'}</option>
+                  <option value="tarde">{isSpanish ? 'Tarde' : 'Tarde'}</option>
+                  <option value="noite">{isSpanish ? 'Noche' : 'Noite'}</option>
+                  <option value="fins-semana">{isSpanish ? 'Fines de Semana' : 'Fins de Semana'}</option>
+                  <option value="flexivel">{isSpanish ? 'Horario Flexible' : 'Horário Flexível'}</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-sky-700 mb-1">Experiência Relevante</label>
+                <label className="block text-sm font-medium text-sky-700 mb-1">{isSpanish ? 'Experiencia Relevante' : 'Experiência Relevante'}</label>
                 <textarea
                   value={formData.experience}
                   onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                  placeholder="Descreva sua experiência relevante (opcional)"
+                  placeholder={isSpanish ? 'Describa su experiencia relevante (opcional)' : 'Descreva sua experiência relevante (opcional)'}
                   disabled={isSubmitting}
                 />
               </div>
@@ -1407,7 +1553,7 @@ function VolunteersPage() {
                 disabled={isSubmitting}
                 className="w-full bg-sky-600 text-white py-3 px-4 rounded-md font-semibold hover:bg-sky-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? 'Enviando...' : 'Enviar Inscrição'}
+                {isSubmitting ? 'Enviando...' : (isSpanish ? 'Enviar Inscripción' : 'Enviar Inscrição')}
               </button>
             </form>
           </div>
@@ -1417,7 +1563,10 @@ function VolunteersPage() {
   );
 }
 
+// ===== Page: Contact =====
 function ContactPage() {
+  const { locale } = useLanguage();
+  const isSpanish = locale === 'es';
   const sendContactForm = (payload: Record<string, unknown>) => submitForm("/api/contact", payload);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -1440,10 +1589,10 @@ function ContactPage() {
         message: formData.message,
       });
       
-      toast.success('Mensagem enviada com sucesso! Responderemos em breve.');
+      toast.success(isSpanish ? '¡Mensaje enviado con éxito! Responderemos en breve.' : 'Mensagem enviada com sucesso! Responderemos em breve.');
       setFormData({ name: '', email: '', subject: '', message: '' });
     } catch (error) {
-      toast.error('Erro ao enviar mensagem. Tente novamente.');
+      toast.error(isSpanish ? 'Error al enviar el mensaje. Inténtelo de nuevo.' : 'Erro ao enviar mensagem. Tente novamente.');
       console.error('Erro:', error);
     } finally {
       setIsSubmitting(false);
@@ -1481,12 +1630,12 @@ function ContactPage() {
   return (
     <div className="py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <PageHeader title="Contactos" subtitle="Entre em contacto connosco" />
+        <PageHeader title={isSpanish ? 'Contactos' : 'Contactos'} subtitle={isSpanish ? 'Póngase en contacto con nosotros' : 'Entre em contacto connosco'} />
 
         {/* Main Contact Info */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Informações de Contacto</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">{isSpanish ? 'Información de Contacto' : 'Informações de Contacto'}</h2>
             
             <div className="space-y-6">
               <div className="flex items-start space-x-4">
@@ -1505,7 +1654,7 @@ function ContactPage() {
                   <Phone className="w-6 h-6 text-green-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Telefone/WhatsApp</h3>
+                  <h3 className="font-semibold text-gray-900 mb-1">{isSpanish ? 'Teléfono/WhatsApp' : 'Telefone/WhatsApp'}</h3>
                   <p className="text-sky-600">+351 916 068 515</p>
                 </div>
               </div>
@@ -1515,7 +1664,7 @@ function ContactPage() {
                   <MapPin className="w-6 h-6 text-purple-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Site Oficial</h3>
+                  <h3 className="font-semibold text-gray-900 mb-1">{isSpanish ? 'Sitio Oficial' : 'Site Oficial'}</h3>
                   <a href="https://www.vainaai.pt" target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:text-sky-800">
                     www.vainaai.pt
                   </a>
@@ -1524,16 +1673,16 @@ function ContactPage() {
             </div>
 
             <div className="mt-8">
-              <h3 className="font-semibold text-gray-900 mb-4">Horário de Atendimento</h3>
+              <h3 className="font-semibold text-gray-900 mb-4">{isSpanish ? 'Horario de Atención' : 'Horário de Atendimento'}</h3>
               <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-sky-600 mb-2"><strong>Segunda a Sexta:</strong> 9:00 - 18:00</p>
-                <p className="text-sky-600 mb-2"><strong>Sábado:</strong> 9:00 - 13:00</p>
-                <p className="text-sky-600"><strong>Domingo:</strong> Fechado</p>
+                <p className="text-sky-600 mb-2"><strong>{isSpanish ? 'Lunes a Viernes:' : 'Segunda a Sexta:'}</strong> 9:00 - 18:00</p>
+                <p className="text-sky-600 mb-2"><strong>{isSpanish ? 'Sábado:' : 'Sábado:'}</strong> 9:00 - 13:00</p>
+                <p className="text-sky-600"><strong>{isSpanish ? 'Domingo:' : 'Domingo:'}</strong> {isSpanish ? 'Cerrado' : 'Fechado'}</p>
               </div>
             </div>
 
             <div className="mt-8">
-              <h3 className="font-semibold text-gray-900 mb-4">Redes Sociais</h3>
+              <h3 className="font-semibold text-gray-900 mb-4">{isSpanish ? 'Redes Sociales' : 'Redes Sociais'}</h3>
               <div className="flex space-x-4">
                 <a href="https://www.facebook.com/share/1FELtv6TMH/" target="_blank" rel="noopener noreferrer">
                   <Facebook className="w-8 h-8 text-blue-600 hover:text-blue-800 cursor-pointer" />
@@ -1548,11 +1697,11 @@ function ContactPage() {
           </div>
 
           <div className="surface-card p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Envie-nos uma Mensagem</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">{isSpanish ? 'Envíenos un Mensaje' : 'Envie-nos uma Mensagem'}</h2>
             
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-sky-700 mb-1">Nome</label>
+                <label className="block text-sm font-medium text-sky-700 mb-1">{isSpanish ? 'Nombre' : 'Nome'}</label>
                 <input
                   type="text"
                   value={formData.name}
@@ -1576,7 +1725,7 @@ function ContactPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-sky-700 mb-1">Assunto</label>
+                <label className="block text-sm font-medium text-sky-700 mb-1">{isSpanish ? 'Asunto' : 'Assunto'}</label>
                 <input
                   type="text"
                   value={formData.subject}
@@ -1588,13 +1737,13 @@ function ContactPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-sky-700 mb-1">Mensagem</label>
+                <label className="block text-sm font-medium text-sky-700 mb-1">{isSpanish ? 'Mensaje' : 'Mensagem'}</label>
                 <textarea
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                   rows={5}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                  placeholder="Escreva a sua mensagem aqui..."
+                  placeholder={isSpanish ? 'Escriba su mensaje aquí...' : 'Escreva a sua mensagem aqui...'}
                   required
                   disabled={isSubmitting}
                 />
@@ -1605,7 +1754,7 @@ function ContactPage() {
                 disabled={isSubmitting}
                 className="w-full bg-sky-600 text-white py-3 px-4 rounded-md font-semibold hover:bg-sky-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? 'Enviando...' : 'Enviar Mensagem'}
+                {isSubmitting ? 'Enviando...' : (isSpanish ? 'Enviar Mensaje' : 'Enviar Mensagem')}
               </button>
             </form>
           </div>
@@ -1613,7 +1762,7 @@ function ContactPage() {
 
         {/* Offices Section */}
         <div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Sede e Delegações</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">{isSpanish ? 'Sede y Delegaciones' : 'Sede e Delegações'}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {offices.map((office, index) => (
               <div key={index} className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">

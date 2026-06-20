@@ -1,35 +1,47 @@
+@import url("https://fonts.googleapis.com/css2?family=Domine:wght@700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --color-light: #ffffff;
-  --color-dark: #171717;
+  --color-light: #0d1117;
+  --color-dark: #f0ede6;
+  --color-card: #161d27;
+  --color-card-soft: #1a2133;
+  --color-primary: #1d4ed8;
+  --color-primary-hover: #1e40af;
+  --color-border: rgba(240, 237, 230, 0.1);
 }
 
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-none px-6 py-3 font-medium uppercase tracking-wider transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50;
+    font-family: "Outfit", "Segoe UI", sans-serif;
   }
 
   .btn-primary {
-    @apply btn bg-blue-600 text-white shadow-md shadow-blue-950/30 hover:bg-blue-700 focus-visible:ring-blue-300;
+    @apply btn border border-blue-700 bg-blue-700 text-slate-50 hover:bg-blue-800 focus-visible:ring-blue-300;
   }
 
   .btn-secondary {
-    @apply btn border border-white/40 bg-white/15 text-white backdrop-blur-md shadow-sm hover:bg-white/25 focus-visible:ring-white;
+    @apply btn border border-slate-500/50 bg-transparent text-slate-100 hover:border-slate-300 hover:text-white focus-visible:ring-slate-200;
   }
 
   .btn-tertiary {
-    @apply btn border border-emerald-200/70 bg-emerald-600 text-white shadow-md shadow-emerald-950/30 hover:bg-emerald-700 focus-visible:ring-emerald-300;
+    @apply btn border border-blue-500 bg-transparent text-blue-200 hover:bg-blue-900/60 hover:text-white focus-visible:ring-blue-300;
   }
 
   .surface-panel {
-    @apply rounded-2xl border border-white/20 bg-slate-900/45 p-6 shadow-xl shadow-slate-950/35 backdrop-blur-md;
+    @apply border p-6 backdrop-blur-sm;
+    border-color: var(--color-border);
+    background: color-mix(in oklab, var(--color-card) 82%, transparent);
   }
 
   .surface-card {
-    @apply rounded-2xl border border-slate-200 bg-white p-6 shadow-md;
+    @apply border p-6;
+    border-color: var(--color-border);
+    background: var(--color-card);
   }
 
   .content-section {
@@ -38,38 +50,25 @@
 }
 
 .accent-text {
-  @apply text-slate-600;
+  @apply text-slate-300;
 }
 
 body {
-  font-family:
-    "Inter Variable",
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    "Helvetica Neue",
-    Arial,
-    "Noto Sans",
-    sans-serif,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
-    "Segoe UI Symbol",
-    "Noto Color Emoji";
+  font-family: "Outfit", "Segoe UI", sans-serif;
   color: var(--color-dark);
   background: var(--color-light);
+  background-image: radial-gradient(circle at top right, rgba(29, 78, 216, 0.2), transparent 40%),
+    linear-gradient(180deg, #0d1117 0%, #101826 55%, #0d1117 100%);
 }
 
 /* only use this to update the style of the auth input fields. use a different class for all other input fields */
 .auth-input-field {
-  @apply w-full px-4 py-3 rounded-container bg-white border border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-shadow shadow-sm hover:shadow;
+  @apply w-full px-4 py-3 rounded-none border border-slate-500/40 bg-slate-900/60 text-slate-100 outline-none transition-shadow focus:border-blue-500 focus:ring-1 focus:ring-blue-500;
 }
 
 /* only use this to update the style of the auth buttons. use the button class for all other buttons */
 .auth-button {
-  @apply w-full px-4 py-3 rounded bg-primary text-white font-semibold hover:bg-primary-hover transition-colors shadow-sm hover:shadow disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply w-full px-4 py-3 rounded-none border border-blue-700 bg-blue-700 text-slate-50 font-semibold uppercase tracking-wider transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50;
 }
 
 /* Justified text for main content paragraphs */
@@ -78,38 +77,104 @@ body {
   text-justify: inter-word;
 }
 
+h1,
+h2,
+h3,
+h4 {
+  font-family: "Fraunces", Georgia, serif;
+  letter-spacing: -0.01em;
+}
+
+.eyebrow-text {
+  font-family: "JetBrains Mono", Consolas, monospace;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
 
 .home-hero-bg {
-  background-image: url("/hero-left-original.jpeg"), url("/hero-right-original.jpeg");
-  background-repeat: no-repeat, no-repeat;
-  background-size: 54% auto, 54% auto;
-  background-position: -7% 50%, 107% 50%;
+  background-image: url('/public/Hero-BG.webp');
+  background-repeat: no-repeat;
+  background-size: contain, contain;
+  background-position: center -10vh;
+}
+
+.gradient-fade { 
+  -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
 }
 
 @media (max-width: 1919px) {
   .home-hero-bg {
-    background-size: 56% auto, 56% auto;
-    background-position: -10% 50%, 110% 50%;
+    background-size: cover, cover;
   }
 }
 
 @media (max-width: 1535px) {
   .home-hero-bg {
-    background-size: 60% auto, 60% auto;
-    background-position: -16% 50%, 116% 50%;
+    background-size: cover, cover;
+    background-position: 60% -10vh;
   }
 }
 
 @media (max-width: 1279px) {
   .home-hero-bg {
     background-size: cover, cover;
-    background-position: 18% 50%, 82% 50%;
+    background-position: 60% -10vh;
   }
 }
 
 @media (max-width: 767px) {
-  .home-hero-bg {
-    background-size: cover, cover;
-    background-position: 30% 50%, 70% 50%;
+  body {
+    overflow-x: hidden;
   }
+
+  .home-hero-bg {
+    background-size: 400%, 100%;
+    background-position: 60% -10vh;
+  }
+
+  .content-section {
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+  }
+
+  .surface-panel,
+  .surface-card {
+    padding: 1rem;
+  }
+
+  .btn,
+  .btn-primary,
+  .btn-secondary,
+  .btn-tertiary {
+    width: auto;
+    justify-content: center;
+    padding: 0.65rem 0.9rem;
+    font-size: 0.8125rem;
+  }
+
+  main .max-w-7xl,
+  main .max-w-6xl,
+  main .max-w-4xl,
+  header .max-w-7xl,
+  footer .max-w-7xl {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  .eyebrow-text {
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+  }
+
+  input,
+  select,
+  textarea,
+  button {
+    font-size: 16px;
+  }
+ 
+  
 }
+
