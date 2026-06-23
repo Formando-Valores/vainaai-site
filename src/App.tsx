@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
+
 import { submitForm } from "./lib/api";
 import { Toaster, toast } from "sonner";
 import 'animate.css';
@@ -40,6 +41,14 @@ import {
   Users2,
   PiggyBank
 } from "lucide-react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay } from "swiper/modules";
+import "swiper/css";
+import 'swiper/css/effect-flip';
+import 'swiper/css/pagination';
+import 'swiper/css/navigation';
+
+import { EffectFlip, Pagination, Navigation } from 'swiper/modules';
 
 // ===== Types =====
 type Locale = 'pt-BR' | 'pt-PT' | 'es';
@@ -122,26 +131,26 @@ export default function App() {
     { id: 'join' as Page, label: isSpanish ? 'Hazte Socio' : isPortuguesePortugal ? 'Torne-se Associado' : 'Associe-se', icon: UserPlus },
     { id: 'report' as Page, label: isSpanish ? 'Denuncia' : 'Denuncie', icon: AlertTriangle },
     { id: 'volunteers' as Page, label: isSpanish ? 'Voluntarios' : isPortuguesePortugal ? 'Voluntariado' : 'Voluntários', icon: Heart },
-    { id: 'contact' as Page, label: isSpanish ? 'Contactos' : 'Contactos', icon: Phone },
+    { id: 'contact' as Page, label: isSpanish ? 'Contactos' : 'Contatos', icon: Phone },
   ];
 
   return (
     <LanguageContext.Provider value={{ locale, setLocale }}>
     <div className="min-h-screen overflow-x-hidden bg-[#0d1117] text-slate-100" lang={isSpanish ? 'es' : locale}>
       {/* Header */}
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[#0d1117]/95 backdrop-blur lg:sticky">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[#0d1117]/95 backdrop-blur">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
-            <div className="flex items-center space-x-2 ml-1">
+            <div className="flex items-center space-x-2 ">
               <img
                 src="/LogoMod.svg"
                 alt="AI Logo"
-                className="h-10 w-10 object-contain"
+                className="h-16 w-[20px] sm:w-auto shrink-0 object-contain lg:mr-8 pr-3"
               />
               <div>
                 <h1 className="font-display text-xl font-semibold text-slate-100 lg:hidden">AI</h1>
-                <p className="eyebrow-text text-[10px] text-blue-300">
+                <p className="eyebrow-text text-[10px] text-blue-300 lg:hidden">
                   {isSpanish ? 'Unidos contra las injusticias' : isPortuguesePortugal ? 'Unidos contra as injustiças' : 
                   'Unidos contra as injustiças'}</p>
               </div>
@@ -380,6 +389,29 @@ function PageContent({ currentPage, setCurrentPage }: { currentPage: Page; setCu
 function HomePage({ setCurrentPage }: { setCurrentPage: (page: Page) => void }) {
   const { locale } = useLanguage();
   const isSpanish = locale === 'es';
+  const slides = [
+    {
+      icon: Briefcase,
+      title: isSpanish ? 'Consultoría Jurídica' : 'Consultoria Jurídica',
+      description: isSpanish
+        ? 'Orientación legal gratuita para ciudadanos en situación de vulnerabilidad.'
+        : 'Orientação legal gratuita para cidadãos em situação de vulnerabilidade.'
+    },
+    {
+      icon: AlertTriangle,
+      title: isSpanish ? 'Canal de Denuncias' : 'Canal de Denúncias',
+      description: isSpanish
+        ? 'Plataforma segura para denunciar irregularidades e injusticias.'
+        : 'Plataforma segura para reportar irregularidades e injustiças.'
+    },
+    {
+      icon: Heart,
+      title: isSpanish ? 'Apoyo Social' : 'Apoio Social',
+      description: isSpanish
+        ? 'Programas de asistencia y apoyo a las comunidades más necesitadas.'
+        : 'Programas de assistência e apoio às comunidades mais necessitadas.'
+    }
+  ];
 
   return (
     <div className="relative min-h-screen home-hero-bg">
@@ -450,7 +482,7 @@ function HomePage({ setCurrentPage }: { setCurrentPage: (page: Page) => void }) 
               <Shield className="w-5 h-5 text-sky-300" />
               <h3 className="text-xl font-semibold text-sky-100">{isSpanish ? 'Privacidad y Confianza' : 'Privacidade e Confiança'}</h3>
             </div>
-            <div className="grid grid-cols-1 gap-3 text-left sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-3 text-left sm:grid-cols-2 lg:grid-cols-">
               <div className="rounded-lg bg-black/20 p-3">
                 <Lock className="mb-1 h-4 w-4 text-sky-300" />
                 <p className="text-sm text-sky-50"><strong>{isSpanish ? 'Confidencialidad:' : 'Confidencialidade:'}</strong> {isSpanish ? 'identidad y contenido protegidos.' : 'identidade e conteúdo protegidos.'}</p>
@@ -484,31 +516,41 @@ function HomePage({ setCurrentPage }: { setCurrentPage: (page: Page) => void }) 
 
       {/* Features Section */}
       <section className="content-section relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-sky-400 via-sky-300 to-blue-400 bg-clip-text text-transparent mb-4">{isSpanish ? 'Cómo Podemos Ayudar' : 'Como Podemos Ajudar'}</h2>
-            <p className="surface-panel inline-block text-lg text-sky-50">{isSpanish ? 'Conozca nuestros principales servicios' : 'Conheça os nossos principais serviços'}</p>
+            <h2 className="mb-4 bg-gradient-to-r from-sky-400 via-sky-300 to-blue-400 bg-clip-text text-5xl font-bold text-transparent">
+              {isSpanish ? 'Cómo Podemos Ayudar' : 'Como Podemos Ajudar'}
+            </h2>
+            <p className=" text-xl text-sky-50">
+              {isSpanish ? 'Conozca nuestros principales servicios' : 'Conheça os nossos principais serviços'}
+            </p>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="surface-panel text-center">
-              <Briefcase className="w-12 h-12 text-sky-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2 bg-gradient-to-r from-sky-400 via-sky-300 to-blue-400 bg-clip-text text-transparent">{isSpanish ? 'Consultoría Jurídica' : 'Consultoria Jurídica'}</h3>
-              <p className="text-sky-100 text-justified">{isSpanish ? 'Orientación legal gratuita para ciudadanos en situación de vulnerabilidad.' : 'Orientação legal gratuita para cidadãos em situação de vulnerabilidade.'}</p>
-            </div>
-            
-            <div className="surface-panel text-center">
-              <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2 bg-gradient-to-r from-sky-400 via-sky-300 to-blue-400 bg-clip-text text-transparent">{isSpanish ? 'Canal de Denuncias' : 'Canal de Denúncias'}</h3>
-              <p className="text-sky-100 text-justified">{isSpanish ? 'Plataforma segura para denunciar irregularidades e injusticias.' : 'Plataforma segura para reportar irregularidades e injustiças.'}</p>
-            </div>
-            
-            <div className="surface-panel text-center">
-              <Heart className="w-12 h-12 text-green-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2 bg-gradient-to-r from-sky-400 via-sky-300 to-blue-400 bg-clip-text text-transparent">{isSpanish ? 'Apoyo Social' : 'Apoio Social'}</h3>
-              <p className="text-sky-100 text-justified">{isSpanish ? 'Programas de asistencia y apoyo a las comunidades más necesitadas.' : 'Programas de assistência e apoio às comunidades mais necessitadas.'}</p>
-            </div>
-          </div>
+
+          <Swiper
+            modules={[EffectFlip, Autoplay, Pagination, Navigation]}
+            loop={true}
+            grabCursor={true}
+            pagination={true}
+            navigation={true}
+            effect={'flip'}
+            autoplay={{ delay: 3500, disableOnInteraction: false }}
+            speed={700}
+            className="w-full"
+          >
+            {slides.map((slide) => {
+              const Icon = slide.icon;
+
+              return (
+                <SwiperSlide key={slide.title}>
+                  <div className="surface-panel h-full text-center ">
+                    <Icon className="mx-auto mb-4 h-12 w-12 text-sky-400" />
+                    <h3 className="mb-2 text-xl font-semibold">{slide.title}</h3>
+                    <p className="text-sky-100 mb-12">{slide.description}</p>
+                  </div>
+                </SwiperSlide>
+              );
+            })}
+          </Swiper>
         </div>
       </section>
     </div>
@@ -1635,7 +1677,7 @@ function ContactPage() {
         {/* Main Contact Info */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">{isSpanish ? 'Información de Contacto' : 'Informações de Contacto'}</h2>
+            <h2 className="text-2xl font-bold text-white-900 mb-6">{isSpanish ? 'Información de Contacto' : 'Informações de Contato'}</h2>
             
             <div className="space-y-6">
               <div className="flex items-start space-x-4">
@@ -1643,7 +1685,7 @@ function ContactPage() {
                   <Mail className="w-6 h-6 text-sky-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Email</h3>
+                  <h3 className="font-semibold text-gray-200 mb-1">Email</h3>
                   <p className="text-sky-600">contato@vainaai.pt</p>
                   <p className="text-sky-600">juridico@vainaai.pt</p>
                 </div>
@@ -1654,7 +1696,7 @@ function ContactPage() {
                   <Phone className="w-6 h-6 text-green-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">{isSpanish ? 'Teléfono/WhatsApp' : 'Telefone/WhatsApp'}</h3>
+                  <h3 className="font-semibold  text-gray-200 mb-1">{isSpanish ? 'Teléfono/WhatsApp' : 'Telefone/WhatsApp'}</h3>
                   <p className="text-sky-600">+351 916 068 515</p>
                 </div>
               </div>
@@ -1664,7 +1706,7 @@ function ContactPage() {
                   <MapPin className="w-6 h-6 text-purple-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">{isSpanish ? 'Sitio Oficial' : 'Site Oficial'}</h3>
+                  <h3 className="font-semibold  text-gray-200 mb-1">{isSpanish ? 'Sitio Oficial' : 'Site Oficial'}</h3>
                   <a href="https://www.vainaai.pt" target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:text-sky-800">
                     www.vainaai.pt
                   </a>
@@ -1673,8 +1715,8 @@ function ContactPage() {
             </div>
 
             <div className="mt-8">
-              <h3 className="font-semibold text-gray-900 mb-4">{isSpanish ? 'Horario de Atención' : 'Horário de Atendimento'}</h3>
-              <div className="bg-gray-50 rounded-lg p-4">
+              <h3 className="font-semibold  text-gray-200 mb-4">{isSpanish ? 'Horario de Atención' : 'Horário de Atendimento'}</h3>
+              <div className="bg-gray-50 bg-slate-900 rounded-lg p-4">
                 <p className="text-sky-600 mb-2"><strong>{isSpanish ? 'Lunes a Viernes:' : 'Segunda a Sexta:'}</strong> 9:00 - 18:00</p>
                 <p className="text-sky-600 mb-2"><strong>{isSpanish ? 'Sábado:' : 'Sábado:'}</strong> 9:00 - 13:00</p>
                 <p className="text-sky-600"><strong>{isSpanish ? 'Domingo:' : 'Domingo:'}</strong> {isSpanish ? 'Cerrado' : 'Fechado'}</p>
@@ -1682,7 +1724,7 @@ function ContactPage() {
             </div>
 
             <div className="mt-8">
-              <h3 className="font-semibold text-gray-900 mb-4">{isSpanish ? 'Redes Sociales' : 'Redes Sociais'}</h3>
+              <h3 className="font-semibold  text-gray-200 mb-4">{isSpanish ? 'Redes Sociales' : 'Redes Sociais'}</h3>
               <div className="flex space-x-4">
                 <a href="https://www.facebook.com/share/1FELtv6TMH/" target="_blank" rel="noopener noreferrer">
                   <Facebook className="w-8 h-8 text-blue-600 hover:text-blue-800 cursor-pointer" />
@@ -1697,52 +1739,52 @@ function ContactPage() {
           </div>
 
           <div className="surface-card p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">{isSpanish ? 'Envíenos un Mensaje' : 'Envie-nos uma Mensagem'}</h2>
+            <h2 className="text-2xl font-bold text-gray-200 mb-6">{isSpanish ? 'Envíenos un Mensaje' : 'Envie-nos uma Mensagem'}</h2>
             
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-sky-700 mb-1">{isSpanish ? 'Nombre' : 'Nome'}</label>
+                <label className="block text-sm font-medium text-sky-600 mb-1">{isSpanish ? 'Nombre' : 'Nome'}</label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                  className="w-full px-3 py-2 border bg-slate-700 border-primary rounded-md focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
                   required
                   disabled={isSubmitting}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-sky-700 mb-1">Email</label>
+                <label className="block text-sm font-medium text-sky-600 mb-1">Email</label>
                 <input
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                  className="w-full px-3 py-2 border bg-slate-700 border-primary rounded-md focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
                   required
                   disabled={isSubmitting}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-sky-700 mb-1">{isSpanish ? 'Asunto' : 'Assunto'}</label>
+                <label className="block text-sm font-medium text-sky-600 mb-1">{isSpanish ? 'Asunto' : 'Assunto'}</label>
                 <input
                   type="text"
                   value={formData.subject}
                   onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                  className="w-full px-3 py-2 border bg-slate-700 border-primary rounded-md focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
                   required
                   disabled={isSubmitting}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-sky-700 mb-1">{isSpanish ? 'Mensaje' : 'Mensagem'}</label>
+                <label className="block text-sm font-medium text-sky-600 mb-1">{isSpanish ? 'Mensaje' : 'Mensagem'}</label>
                 <textarea
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                   rows={5}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                  className="w-full px-3 py-2 border bg-slate-700 border-primary rounded-md focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
                   placeholder={isSpanish ? 'Escriba su mensaje aquí...' : 'Escreva a sua mensagem aqui...'}
                   required
                   disabled={isSubmitting}
@@ -1752,7 +1794,7 @@ function ContactPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-sky-600 text-white py-3 px-4 rounded-md font-semibold hover:bg-sky-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-primary text-white py-3 px-4 rounded-md font-semibold hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? 'Enviando...' : (isSpanish ? 'Enviar Mensaje' : 'Enviar Mensagem')}
               </button>
@@ -1762,18 +1804,18 @@ function ContactPage() {
 
         {/* Offices Section */}
         <div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">{isSpanish ? 'Sede y Delegaciones' : 'Sede e Delegações'}</h2>
+          <h2 className="text-3xl font-bold text-gray-200 mb-8 text-center">{isSpanish ? 'Sede y Delegaciones' : 'Sede e Delegações'}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {offices.map((office, index) => (
-              <div key={index} className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
+              <div key={index} className="bg-slate-800 border border-gray-700 rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
                 <div className="flex items-center mb-4">
                   <div className="w-10 h-10 bg-sky-100 rounded-full flex items-center justify-center mr-3">
                     <MapPin className="w-5 h-5 text-sky-600" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-gray-900">{office.name}</h3>
+                    <h3 className="font-bold text-gray-200">{office.name}</h3>
                     <span className={`text-xs px-2 py-1 rounded-full ${
-                      office.type === 'Sede' ? 'bg-sky-100 text-sky-800' : 'bg-gray-100 text-gray-800'
+                      office.type === 'Sede' ? 'bg-sky-200 text-primary' : 'bg-sky-200 text-primary'
                     }`}>
                       {office.type}
                     </span>
