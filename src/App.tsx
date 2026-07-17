@@ -113,13 +113,13 @@ export default function App() {
     });
   };
 
-  const nextLocaleFlag = locale === 'pt-BR' ? '🇵🇹' : locale === 'pt-PT' ? '🇪🇸' : '🇧🇷';
-  const nextLocaleLabel = locale === 'pt-BR' ? 'PT-PT' : locale === 'pt-PT' ? 'ES' : 'PT-BR';
-  const nextLocaleTitle = locale === 'pt-BR'
-    ? 'Português de Portugal'
+  const currentLocaleFlag = locale === 'pt-BR' ? '🇧🇷' : locale === 'pt-PT' ? '🇵🇹' : '🇪🇸';
+  const currentLocaleLabel = locale === 'pt-BR' ? 'PT-BR' : locale === 'pt-PT' ? 'PT-PT' : 'ES';
+  const currentLocaleTitle = locale === 'pt-BR'
+    ? 'Português do Brasil'
     : locale === 'pt-PT'
-      ? 'Español'
-      : 'Português do Brasil';
+      ? 'Português de Portugal'
+      : 'Español';
 
   const menuItems = [
     { id: 'home' as Page, label: isSpanish ? '' : '', icon: Home },
@@ -195,12 +195,12 @@ export default function App() {
               <button
                 onClick={toggleLocale}
                 className="inline-flex min-w-12 items-center justify-center rounded-none border border-white/15 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-200 transition-colors hover:border-blue-400 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
-                aria-label={`Mudar idioma para ${nextLocaleTitle}`}
-                title={nextLocaleTitle}
+                aria-label={`Idioma atual: ${currentLocaleTitle}. Clique para mudar.`}
+                title={currentLocaleTitle}
               >
                 <span className="inline-flex items-center gap-1">
-                  <span>{nextLocaleFlag}</span>
-                  <span>{nextLocaleLabel}</span>
+                  <span>{currentLocaleFlag}</span>
+                  <span>{currentLocaleLabel}</span>
                 </span>
               </button>
 
@@ -328,12 +328,12 @@ export default function App() {
         type="button"
         onClick={toggleLocale}
         className="fixed bottom-5 left-5 z-50 hidden h-14 min-w-14 items-center justify-center rounded-full border border-white/15 bg-[#0f1725] px-4 text-xs font-semibold uppercase tracking-wider text-white shadow-lg shadow-black/30 transition-transform duration-200 hover:scale-105 hover:border-blue-400 hover:bg-[#15213a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d1117] lg:flex"
-        aria-label={`Mudar idioma para ${nextLocaleTitle}`}
-        title={nextLocaleTitle}
+        aria-label={`Idioma atual: ${currentLocaleTitle}. Clique para mudar.`}
+        title={currentLocaleTitle}
       >
         <span className="inline-flex items-center gap-1">
-          <span>{nextLocaleFlag}</span>
-          <span>{nextLocaleLabel}</span>
+          <span>{currentLocaleFlag}</span>
+          <span>{currentLocaleLabel}</span>
         </span>
       </button>
 
