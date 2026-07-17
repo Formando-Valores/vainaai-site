@@ -919,66 +919,134 @@ function NewsPage() {
 function JoinPage() {
   const { locale } = useLanguage();
   const isSpanish = locale === 'es';
-  const sendAssociationForm = (payload: Record<string, unknown>) => submitForm("/api/association", payload);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
     documentType: '',
     documentNumber: '',
     nif: '',
+    phone: '',
+    maritalStatus: '',
+    country: 'Portugal',
     address: '',
     postalCode: '',
-    phone: '',
-    email: '',
-    maritalStatus: '',
+    serviceUnit: 'JURÍDICO / ADVOCACIA',
     profession: '',
     nationality: '',
-    memberType: '',
     agreeTerms: false
   });
+  const [passwordRules, setPasswordRules] = useState({ length: false, upper: false, number: false, special: false });
+  const [passwordTouched, setPasswordTouched] = useState(false);
+  const [confirmMatch, setConfirmMatch] = useState<boolean | null>(null);
+
+  const checkPasswordRules = (val: string) => {
+    setPasswordRules({
+      length: val.length >= 8,
+      upper: /[A-Z]/.test(val),
+      number: /[0-9]/.test(val),
+      special: /[!@#$%^&*(),.?":{}|<>]/.test(val),
+    });
+  };
+
+  const handlePasswordChange = (val: string) => {
+    setFormData({ ...formData, password: val });
+    checkPasswordRules(val);
+    if (formData.confirmPassword) {
+      setConfirmMatch(val === formData.confirmPassword);
+    }
+  };
+
+  const handleConfirmChange = (val: string) => {
+    setFormData({ ...formData, confirmPassword: val });
+    setConfirmMatch(formData.password === val);
+  };
+
+  const isPasswordValid = passwordRules.length && passwordRules.upper && passwordRules.number && passwordRules.special;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    if (!isPasswordValid) {
+      toast.error(isSpanish ? 'La contraseña debe tener 8 caracteres, una mayúscula, un número y un carácter especial.' : 'A senha deve ter 8 caracteres, uma maiúscula, um número e um carácter especial.');
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      toast.error(isSpanish ? 'Las contraseñas no coinciden.' : 'As senhas não coincidem.');
+      return;
+    }
+
     if (!formData.agreeTerms) {
       toast.error(isSpanish ? 'Debe aceptar los términos del Estatuto Social para continuar.' : 'Deve concordar com os termos do Estatuto Social para prosseguir.');
       return;
     }
-    
+
     setIsSubmitting(true);
-    
+
+    const docLabel = formData.documentType === 'bi' ? 'BI' : formData.documentType === 'cc' ? 'CC' : 'Passaporte';
+    const documentId = formData.documentNumber ? `${docLabel}: ${formData.documentNumber}` : '';
+
+    const payload = {
+      organizationSlug: import.meta.env.VITE_SGI_FV_ORG_SLUG || 'default',
+      source: import.meta.env.VITE_SGI_FV_SOURCE || 'vainaai-site',
+      siteName: import.meta.env.VITE_SGI_FV_SITE_NAME || 'VainAAI',
+      fullName: formData.fullName,
+      email: formData.email,
+      password: formData.password,
+      confirmPassword: formData.confirmPassword,
+      documentId,
+      taxId: formData.nif,
+      address: formData.address,
+      maritalStatus: formData.maritalStatus || 'Solteiro',
+      country: formData.country || 'Portugal',
+      phone: formData.phone,
+      processTitle: 'Cadastro via site VainAAI',
+      serviceUnit: formData.serviceUnit,
+      organizationRequestedName: '',
+      consentPrivacyPolicy: formData.agreeTerms,
+    };
+
+    const supabaseUrl = (import.meta.env.VITE_SGI_FV_SUPABASE_URL || '').replace(/\/$/, '');
+    const anonKey = import.meta.env.VITE_SGI_FV_ANON_KEY || '';
+    const apiKey = import.meta.env.VITE_SGI_FV_API_KEY || '';
+
+    if (!supabaseUrl || !anonKey || !apiKey) {
+      toast.error(isSpanish ? 'Error de configuración. Contacte al administrador.' : 'Erro de configuração. Contacte o administrador.');
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
-      await sendAssociationForm({
-        fullName: formData.fullName,
-        documentType: formData.documentType,
-        documentNumber: formData.documentNumber,
-        nif: formData.nif,
-        address: formData.address,
-        postalCode: formData.postalCode,
-        phone: formData.phone,
-        email: formData.email,
-        maritalStatus: formData.maritalStatus,
-        profession: formData.profession,
-        nationality: formData.nationality,
-        memberType: formData.memberType,
+      const response = await fetch(`${supabaseUrl}/functions/v1/wix-client-intake`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': anonKey,
+          'Authorization': `Bearer ${anonKey}`,
+          'x-api-key': apiKey,
+        },
+        body: JSON.stringify(payload),
       });
-      
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Não foi possível concluir o cadastro.');
+      }
+
       toast.success(isSpanish ? '¡Formulario de asociación enviado con éxito! Nos pondremos en contacto en breve para finalizar el proceso.' : 'Formulário de associação enviado com sucesso! Entraremos em contacto em breve para finalizar o processo.');
       setFormData({
-        fullName: '',
-        documentType: '',
-        documentNumber: '',
-        nif: '',
-        address: '',
-        postalCode: '',
-        phone: '',
-        email: '',
-        maritalStatus: '',
-        profession: '',
-        nationality: '',
-        memberType: '',
-        agreeTerms: false
+        fullName: '', email: '', password: '', confirmPassword: '',
+        documentType: '', documentNumber: '', nif: '', phone: '',
+        maritalStatus: '', country: 'Portugal', address: '', postalCode: '',
+        serviceUnit: 'JURÍDICO / ADVOCACIA', profession: '', nationality: '', agreeTerms: false,
       });
+      setPasswordRules({ length: false, upper: false, number: false, special: false });
+      setPasswordTouched(false);
+      setConfirmMatch(null);
     } catch (error) {
       toast.error(isSpanish ? 'Error al enviar el formulario. Inténtelo de nuevo.' : 'Erro ao enviar formulário. Tente novamente.');
       console.error('Erro:', error);
@@ -986,6 +1054,12 @@ function JoinPage() {
       setIsSubmitting(false);
     }
   };
+
+  const PasswordRule = ({ ok, text }: { ok: boolean; text: string }) => (
+    <li className={`text-xs ${ok ? 'text-green-600' : 'text-red-500'}`}>
+      {ok ? '✓' : '✗'} {text}
+    </li>
+  );
 
   return (
     <div className="py-16">
@@ -1005,6 +1079,7 @@ function JoinPage() {
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Nome Completo */}
                 <div>
                   <label className="block text-sm font-medium text-sky-700 mb-2">
                     {isSpanish ? 'Nombre Completo' : 'Nome Completo'} <span className="text-red-500">*</span>
@@ -1019,97 +1094,7 @@ function JoinPage() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-sky-700 mb-2">
-                    {isSpanish ? 'Tipo de Documento' : 'Tipo de Documento'} <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    value={formData.documentType}
-                    onChange={(e) => setFormData({ ...formData, documentType: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                    required
-                    disabled={isSubmitting}
-                  >
-                    <option value="">{isSpanish ? 'Seleccione el tipo' : 'Selecione o tipo'}</option>
-                    <option value="bi">{isSpanish ? 'Documento de Identidad' : 'Bilhete de Identidade'}</option>
-                    <option value="cc">{isSpanish ? 'Tarjeta de Ciudadano' : 'Cartão de Cidadão'}</option>
-                    <option value="passaporte">Passaporte</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-sky-700 mb-2">
-                    {isSpanish ? 'Número del Documento' : 'Número do Documento'} <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.documentNumber}
-                    onChange={(e) => setFormData({ ...formData, documentNumber: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                    required
-                    disabled={isSubmitting}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-sky-700 mb-2">
-                    NIF <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.nif}
-                    onChange={(e) => setFormData({ ...formData, nif: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                    required
-                    disabled={isSubmitting}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-sky-700 mb-2">
-                    {isSpanish ? 'Dirección' : 'Morada'} <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.address}
-                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                    placeholder={isSpanish ? 'Calle, número, piso...' : 'Rua, número, andar...'}
-                    required
-                    disabled={isSubmitting}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-sky-700 mb-2">
-                    {isSpanish ? 'Código Postal' : 'Código Postal'} <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.postalCode}
-                    onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                    placeholder="0000-000"
-                    required
-                    disabled={isSubmitting}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-sky-700 mb-2">
-                    {isSpanish ? 'Teléfono Móvil' : 'Telemóvel'} <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                    placeholder="+351 XXX XXX XXX"
-                    required
-                    disabled={isSubmitting}
-                  />
-                </div>
-
+                {/* Email */}
                 <div>
                   <label className="block text-sm font-medium text-sky-700 mb-2">
                     {isSpanish ? 'Correo Electrónico' : 'Correio Eletrónico'} <span className="text-red-500">*</span>
@@ -1124,72 +1109,239 @@ function JoinPage() {
                   />
                 </div>
 
+                {/* Senha */}
                 <div>
                   <label className="block text-sm font-medium text-sky-700 mb-2">
-                    {isSpanish ? 'Estado Civil' : 'Estado Civil'} <span className="text-red-500">*</span>
+                    {isSpanish ? 'Contraseña' : 'Senha'} <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) => handlePasswordChange(e.target.value)}
+                    onFocus={() => setPasswordTouched(true)}
+                    onBlur={() => { if (!formData.password) setPasswordTouched(false); }}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                    required
+                    disabled={isSubmitting}
+                  />
+                  {passwordTouched && formData.password.length > 0 && (
+                    <ul className="mt-1 space-y-0.5">
+                      <PasswordRule ok={passwordRules.length} text="Mínimo 8 caracteres" />
+                      <PasswordRule ok={passwordRules.upper} text="Uma letra maiúscula" />
+                      <PasswordRule ok={passwordRules.number} text="Um número" />
+                      <PasswordRule ok={passwordRules.special} text="Um carácter especial (!@#$%^&*...)" />
+                    </ul>
+                  )}
+                </div>
+
+                {/* Confirmar Senha */}
+                <div>
+                  <label className="block text-sm font-medium text-sky-700 mb-2">
+                    {isSpanish ? 'Confirmar Contraseña' : 'Confirmar Senha'} <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="password"
+                    value={formData.confirmPassword}
+                    onChange={(e) => handleConfirmChange(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                    required
+                    disabled={isSubmitting}
+                  />
+                  {confirmMatch !== null && formData.confirmPassword.length > 0 && (
+                    <p className={`mt-1 text-xs ${confirmMatch ? 'text-green-600' : 'text-red-500'}`}>
+                      {confirmMatch ? '✓ Senhas coincidem' : '✗ Senhas não coincidem'}
+                    </p>
+                  )}
+                </div>
+
+                {/* Tipo de Documento */}
+                <div>
+                  <label className="block text-sm font-medium text-sky-700 mb-2">
+                    {isSpanish ? 'Tipo de Documento' : 'Tipo de Documento'}
+                  </label>
+                  <select
+                    value={formData.documentType}
+                    onChange={(e) => setFormData({ ...formData, documentType: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                    disabled={isSubmitting}
+                  >
+                    <option value="">{isSpanish ? 'Seleccione el tipo' : 'Selecione o tipo'}</option>
+                    <option value="bi">{isSpanish ? 'Documento de Identidad' : 'Bilhete de Identidade'}</option>
+                    <option value="cc">{isSpanish ? 'Tarjeta de Ciudadano' : 'Cartão de Cidadão'}</option>
+                    <option value="passaporte">Passaporte</option>
+                  </select>
+                </div>
+
+                {/* Número do Documento */}
+                <div>
+                  <label className="block text-sm font-medium text-sky-700 mb-2">
+                    {isSpanish ? 'Número del Documento' : 'Número do Documento'}
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.documentNumber}
+                    onChange={(e) => setFormData({ ...formData, documentNumber: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                {/* NIF */}
+                <div>
+                  <label className="block text-sm font-medium text-sky-700 mb-2">
+                    NIF
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.nif}
+                    onChange={(e) => setFormData({ ...formData, nif: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                {/* Telemóvel */}
+                <div>
+                  <label className="block text-sm font-medium text-sky-700 mb-2">
+                    {isSpanish ? 'Teléfono Móvil' : 'Telemóvel'}
+                  </label>
+                  <input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                    placeholder="+351 XXX XXX XXX"
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                {/* Estado Civil */}
+                <div>
+                  <label className="block text-sm font-medium text-sky-700 mb-2">
+                    {isSpanish ? 'Estado Civil' : 'Estado Civil'}
                   </label>
                   <select
                     value={formData.maritalStatus}
                     onChange={(e) => setFormData({ ...formData, maritalStatus: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                    required
                     disabled={isSubmitting}
                   >
                     <option value="">{isSpanish ? 'Seleccione' : 'Selecione'}</option>
-                    <option value="solteiro">{isSpanish ? 'Soltero(a)' : 'Solteiro(a)'}</option>
-                    <option value="casado">{isSpanish ? 'Casado(a)' : 'Casado(a)'}</option>
-                    <option value="divorciado">{isSpanish ? 'Divorciado(a)' : 'Divorciado(a)'}</option>
-                    <option value="viuvo">{isSpanish ? 'Viudo(a)' : 'Viúvo(a)'}</option>
-                    <option value="uniao_facto">{isSpanish ? 'Unión de Hecho' : 'União de Facto'}</option>
+                    <option value="Solteiro">{isSpanish ? 'Soltero(a)' : 'Solteiro(a)'}</option>
+                    <option value="Casado">{isSpanish ? 'Casado(a)' : 'Casado(a)'}</option>
+                    <option value="Divorciado">{isSpanish ? 'Divorciado(a)' : 'Divorciado(a)'}</option>
+                    <option value="Viúvo">{isSpanish ? 'Viudo(a)' : 'Viúvo(a)'}</option>
                   </select>
                 </div>
 
+                {/* País */}
                 <div>
                   <label className="block text-sm font-medium text-sky-700 mb-2">
-                    {isSpanish ? 'Profesión' : 'Profissão'} <span className="text-red-500">*</span>
+                    {isSpanish ? 'País' : 'País'}
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.country}
+                    onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                {/* Morada */}
+                <div>
+                  <label className="block text-sm font-medium text-sky-700 mb-2">
+                    {isSpanish ? 'Dirección' : 'Morada'}
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.address}
+                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                    placeholder={isSpanish ? 'Calle, número, piso...' : 'Rua, número, andar...'}
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                {/* Código Postal */}
+                <div>
+                  <label className="block text-sm font-medium text-sky-700 mb-2">
+                    {isSpanish ? 'Código Postal' : 'Código Postal'}
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.postalCode}
+                    onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                    placeholder="0000-000"
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                {/* Profissão */}
+                <div>
+                  <label className="block text-sm font-medium text-sky-700 mb-2">
+                    {isSpanish ? 'Profesión' : 'Profissão'}
                   </label>
                   <input
                     type="text"
                     value={formData.profession}
                     onChange={(e) => setFormData({ ...formData, profession: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                    required
                     disabled={isSubmitting}
                   />
                 </div>
 
+                {/* Nacionalidade */}
                 <div>
                   <label className="block text-sm font-medium text-sky-700 mb-2">
-                    {isSpanish ? 'Nacionalidad' : 'Nacionalidade'} <span className="text-red-500">*</span>
+                    {isSpanish ? 'Nacionalidad' : 'Nacionalidade'}
                   </label>
                   <input
                     type="text"
                     value={formData.nationality}
                     onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                    required
                     disabled={isSubmitting}
                   />
                 </div>
+              </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-sky-700 mb-2">
-                    {isSpanish ? 'Tipo de Asociación' : 'Tipo de Associação'} <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    value={formData.memberType}
-                    onChange={(e) => setFormData({ ...formData, memberType: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                    required
-                    disabled={isSubmitting}
-                  >
-                    <option value="">{isSpanish ? 'Seleccione el tipo' : 'Selecione o tipo'}</option>
-                    <option value="cliente">{isSpanish ? 'Cliente' : 'Cliente'}</option>
-                    <option value="prestador">{isSpanish ? 'Prestador de Servicios' : 'Prestador de Serviços'}</option>
-                  </select>
+              {/* Área de Atendimento */}
+              <div>
+                <label className="block text-sm font-medium text-sky-700 mb-3">
+                  {isSpanish ? 'Área de Atención' : 'Área de Atendimento'} <span className="text-red-500">*</span>
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {[
+                    { value: 'JURÍDICO / ADVOCACIA', label: 'Jurídico / Advocacia' },
+                    { value: 'ADMINISTRATIVO', label: 'Administrativo' },
+                    { value: 'TECNOLÓGICO / AI', label: 'Tecnológico / AI' },
+                  ].map((opt) => (
+                    <label
+                      key={opt.value}
+                      className={`flex items-center justify-center gap-2 rounded-lg border p-3 text-sm font-medium cursor-pointer transition-colors ${
+                        formData.serviceUnit === opt.value
+                          ? 'border-sky-500 bg-sky-50 text-sky-700'
+                          : 'border-gray-300 text-sky-700 hover:border-sky-300'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="serviceUnit"
+                        value={opt.value}
+                        checked={formData.serviceUnit === opt.value}
+                        onChange={(e) => setFormData({ ...formData, serviceUnit: e.target.value })}
+                        className="text-sky-600 focus:ring-sky-500"
+                        disabled={isSubmitting}
+                      />
+                      {opt.label}
+                    </label>
+                  ))}
                 </div>
               </div>
 
+              {/* Termos */}
               <div className="bg-sky-50 border border-sky-200 rounded-lg p-6">
                 <div className="flex items-start space-x-3">
                   <input
