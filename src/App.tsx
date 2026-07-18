@@ -986,29 +986,6 @@ function JoinPage() {
 
     setIsSubmitting(true);
 
-    const docLabel = formData.documentType === 'bi' ? 'BI' : formData.documentType === 'cc' ? 'CC' : 'Passaporte';
-    const documentId = formData.documentNumber ? `${docLabel}: ${formData.documentNumber}` : '';
-
-    const payload = {
-      organizationSlug: import.meta.env.VITE_SGI_FV_ORG_SLUG || 'default',
-      source: import.meta.env.VITE_SGI_FV_SOURCE || 'vainaai-site',
-      siteName: import.meta.env.VITE_SGI_FV_SITE_NAME || 'VainAAI',
-      fullName: formData.fullName,
-      email: formData.email,
-      password: formData.password,
-      confirmPassword: formData.confirmPassword,
-      documentId,
-      taxId: formData.nif,
-      address: formData.address,
-      maritalStatus: formData.maritalStatus || 'Solteiro',
-      country: formData.country || 'Portugal',
-      phone: formData.phone,
-      processTitle: 'Cadastro via site VainAAI',
-      serviceUnit: formData.serviceUnit,
-      organizationRequestedName: '',
-      consentPrivacyPolicy: formData.agreeTerms,
-    };
-
     const supabaseUrl = (import.meta.env.VITE_SGI_FV_SUPABASE_URL || '').replace(/\/$/, '');
     const anonKey = import.meta.env.VITE_SGI_FV_ANON_KEY || '';
     const apiKey = import.meta.env.VITE_SGI_FV_API_KEY || '';
@@ -1018,6 +995,29 @@ function JoinPage() {
       setIsSubmitting(false);
       return;
     }
+
+    const payload = {
+      organizationSlug: import.meta.env.VITE_SGI_FV_ORG_SLUG || 'default',
+      source: import.meta.env.VITE_SGI_FV_SOURCE || 'vainaai',
+      siteName: import.meta.env.VITE_SGI_FV_SITE_NAME || 'Vainaai.pt',
+      fullName: formData.fullName,
+      email: formData.email,
+      password: formData.password,
+      confirmPassword: formData.confirmPassword,
+      documentId: formData.documentNumber || '',
+      taxId: formData.nif || '',
+      address: formData.address || '',
+      postalCode: formData.postalCode || '',
+      profession: formData.profession || '',
+      nationality: formData.nationality || '',
+      maritalStatus: formData.maritalStatus || 'Solteiro',
+      country: formData.country || 'Portugal',
+      phone: formData.phone || '',
+      serviceUnit: formData.serviceUnit || 'JURÍDICO / ADVOCACIA',
+      processTitle: 'Filiação - ' + (formData.fullName || ''),
+      organizationRequestedName: 'Associação contra as Injustiças - AI',
+      consentPrivacyPolicy: true,
+    };
 
     try {
       const response = await fetch(`${supabaseUrl}/functions/v1/wix-client-intake`, {
@@ -1079,8 +1079,8 @@ function JoinPage() {
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Nome Completo */}
-                <div>
+                {/* Nome Completo - full width */}
+                <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-sky-700 mb-2">
                     {isSpanish ? 'Nombre Completo' : 'Nome Completo'} <span className="text-red-500">*</span>
                   </label>
@@ -1094,8 +1094,8 @@ function JoinPage() {
                   />
                 </div>
 
-                {/* Email */}
-                <div>
+                {/* Email - full width */}
+                <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-sky-700 mb-2">
                     {isSpanish ? 'Correo Electrónico' : 'Correio Eletrónico'} <span className="text-red-500">*</span>
                   </label>
@@ -1166,9 +1166,9 @@ function JoinPage() {
                     disabled={isSubmitting}
                   >
                     <option value="">{isSpanish ? 'Seleccione el tipo' : 'Selecione o tipo'}</option>
-                    <option value="bi">{isSpanish ? 'Documento de Identidad' : 'Bilhete de Identidade'}</option>
-                    <option value="cc">{isSpanish ? 'Tarjeta de Ciudadano' : 'Cartão de Cidadão'}</option>
-                    <option value="passaporte">Passaporte</option>
+                    <option value="BI">{isSpanish ? 'Documento de Identidad' : 'Bilhete de Identidade'}</option>
+                    <option value="CC">{isSpanish ? 'Tarjeta de Ciudadano' : 'Cartão de Cidadão'}</option>
+                    <option value="Passaporte">Passaporte</option>
                   </select>
                 </div>
 
@@ -1188,9 +1188,7 @@ function JoinPage() {
 
                 {/* NIF */}
                 <div>
-                  <label className="block text-sm font-medium text-sky-700 mb-2">
-                    NIF
-                  </label>
+                  <label className="block text-sm font-medium text-sky-700 mb-2">NIF</label>
                   <input
                     type="text"
                     value={formData.nif}
@@ -1248,8 +1246,8 @@ function JoinPage() {
                   />
                 </div>
 
-                {/* Morada */}
-                <div>
+                {/* Morada - full width */}
+                <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-sky-700 mb-2">
                     {isSpanish ? 'Dirección' : 'Morada'}
                   </label>
@@ -1307,7 +1305,7 @@ function JoinPage() {
                 </div>
               </div>
 
-              {/* Área de Atendimento */}
+              {/* Área de Atendimento - full width */}
               <div>
                 <label className="block text-sm font-medium text-sky-700 mb-3">
                   {isSpanish ? 'Área de Atención' : 'Área de Atendimento'} <span className="text-red-500">*</span>
