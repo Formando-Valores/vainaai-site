@@ -920,6 +920,7 @@ function JoinPage() {
   const { locale } = useLanguage();
   const isSpanish = locale === 'es';
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formMessage, setFormMessage] = useState<{ text: string; ok: boolean } | null>(null);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -968,65 +969,52 @@ function JoinPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormMessage(null);
 
     if (!isPasswordValid) {
-      toast.error(isSpanish ? 'La contraseña debe tener 8 caracteres, una mayúscula, un número y un carácter especial.' : 'A senha deve ter 8 caracteres, uma maiúscula, um número e um carácter especial.');
+      setFormMessage({ text: isSpanish ? 'La contraseña debe tener 8 caracteres, una mayúscula, un número y un carácter especial.' : 'A senha deve ter 8 caracteres, uma maiúscula, um número e um carácter especial.', ok: false });
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      toast.error(isSpanish ? 'Las contraseñas no coinciden.' : 'As senhas não coincidem.');
+      setFormMessage({ text: isSpanish ? 'Las contraseñas no coinciden.' : 'As senhas não coincidem.', ok: false });
       return;
     }
 
     if (!formData.agreeTerms) {
-      toast.error(isSpanish ? 'Debe aceptar los términos del Estatuto Social para continuar.' : 'Deve concordar com os termos do Estatuto Social para prosseguir.');
+      setFormMessage({ text: isSpanish ? 'Debe aceptar los términos del Estatuto Social para continuar.' : 'É obrigatório concordar com os termos.', ok: false });
       return;
     }
 
     setIsSubmitting(true);
+    setFormMessage({ text: isSpanish ? 'Enviando su registro...' : 'A enviar o seu cadastro...', ok: true });
 
     const supabaseUrl = (import.meta.env.VITE_SGI_FV_SUPABASE_URL || '').replace(/\/$/, '');
     const anonKey = import.meta.env.VITE_SGI_FV_ANON_KEY || '';
-    const apiKey = import.meta.env.VITE_SGI_FV_API_KEY || '';
+    const orgId = import.meta.env.VITE_SGI_FV_ORG_ID || 'd535afe4-6279-40a9-aaa9-f5a7f6ee4825';
 
-    if (!supabaseUrl || !anonKey || !apiKey) {
-      toast.error(isSpanish ? 'Error de configuración. Contacte al administrador.' : 'Erro de configuração. Contacte o administrador.');
+    if (!supabaseUrl || !anonKey) {
+      setFormMessage({ text: isSpanish ? 'Error de configuración. Contacte al administrador.' : 'Erro de configuração. Contacte o administrador.', ok: false });
       setIsSubmitting(false);
       return;
     }
 
     const payload = {
-      organizationSlug: import.meta.env.VITE_SGI_FV_ORG_SLUG || 'default',
-      source: import.meta.env.VITE_SGI_FV_SOURCE || 'vainaai',
-      siteName: import.meta.env.VITE_SGI_FV_SITE_NAME || 'Vainaai.pt',
-      fullName: formData.fullName,
       email: formData.email,
       password: formData.password,
-      confirmPassword: formData.confirmPassword,
-      documentId: formData.documentNumber || '',
-      taxId: formData.nif || '',
-      address: formData.address || '',
-      postalCode: formData.postalCode || '',
-      profession: formData.profession || '',
-      nationality: formData.nationality || '',
-      maritalStatus: formData.maritalStatus || 'Solteiro',
-      country: formData.country || 'Portugal',
-      phone: formData.phone || '',
-      serviceUnit: formData.serviceUnit || 'JURÍDICO / ADVOCACIA',
-      processTitle: 'Filiação - ' + (formData.fullName || ''),
-      organizationRequestedName: 'Associação contra as Injustiças - AI',
-      consentPrivacyPolicy: true,
+      name: formData.fullName,
+      org_id: orgId,
+      role: 'Cliente',
+      unit: formData.serviceUnit,
     };
 
     try {
-      const response = await fetch(`${supabaseUrl}/functions/v1/wix-client-intake`, {
+      const response = await fetch(`${supabaseUrl}/functions/v1/create-user`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'apikey': anonKey,
           'Authorization': `Bearer ${anonKey}`,
-          'x-api-key': apiKey,
         },
         body: JSON.stringify(payload),
       });
@@ -1037,7 +1025,7 @@ function JoinPage() {
         throw new Error(result.error || 'Não foi possível concluir o cadastro.');
       }
 
-      toast.success(isSpanish ? '¡Formulario de asociación enviado con éxito! Nos pondremos en contacto en breve para finalizar el proceso.' : 'Formulário de associação enviado com sucesso! Entraremos em contacto em breve para finalizar o processo.');
+      setFormMessage({ text: isSpanish ? '¡Cadastro realizado con éxito! Hemos enviado un correo electrónico con sus credenciales y el enlace de pago.' : '✓ Cadastro realizado com sucesso! Enviamos um e-mail com as suas credenciais e o link de pagamento.', ok: true });
       setFormData({
         fullName: '', email: '', password: '', confirmPassword: '',
         documentType: '', documentNumber: '', nif: '', phone: '',
@@ -1048,7 +1036,7 @@ function JoinPage() {
       setPasswordTouched(false);
       setConfirmMatch(null);
     } catch (error) {
-      toast.error(isSpanish ? 'Error al enviar el formulario. Inténtelo de nuevo.' : 'Erro ao enviar formulário. Tente novamente.');
+      setFormMessage({ text: isSpanish ? 'Error al enviar el formulario. Inténtelo de nuevo.' : 'Erro ao enviar formulário. Tente novamente.', ok: false });
       console.error('Erro:', error);
     } finally {
       setIsSubmitting(false);
@@ -1076,6 +1064,12 @@ function JoinPage() {
                 {isSpanish ? 'Rellene el siguiente formulario para hacerse miembro de AI - Asociación contra las Injusticias.' : 'Preencha o formulário abaixo para se tornar membro da AI - Associação contra as Injustiças.'}
               </p>
             </div>
+
+            {formMessage && (
+              <div className={`mb-6 px-4 py-3 rounded-lg text-sm font-semibold ${formMessage.ok ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+                {formMessage.text}
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1318,7 +1312,7 @@ function JoinPage() {
                   ].map((opt) => (
                     <label
                       key={opt.value}
-                      className={`flex items-center justify-center gap-2 rounded-lg border p-3 text-sm font-medium cursor-pointer transition-colors ${
+                      className={`flex items-center justify-center gap-2 rounded-xl border-2 p-3 text-sm font-semibold cursor-pointer transition-colors ${
                         formData.serviceUnit === opt.value
                           ? 'border-sky-500 bg-sky-50 text-sky-700'
                           : 'border-gray-300 text-sky-700 hover:border-sky-300'
@@ -1330,7 +1324,7 @@ function JoinPage() {
                         value={opt.value}
                         checked={formData.serviceUnit === opt.value}
                         onChange={(e) => setFormData({ ...formData, serviceUnit: e.target.value })}
-                        className="text-sky-600 focus:ring-sky-500"
+                        className="accent-sky-600"
                         disabled={isSubmitting}
                       />
                       {opt.label}
@@ -1340,23 +1334,23 @@ function JoinPage() {
               </div>
 
               {/* Termos */}
-              <div className="bg-sky-50 border border-sky-200 rounded-lg p-6">
-                <div className="flex items-start space-x-3">
+              <div className="bg-sky-50 border border-sky-200 rounded-xl p-6">
+                <div className="flex items-start gap-3">
                   <input
                     type="checkbox"
                     id="agreeTerms"
                     checked={formData.agreeTerms}
                     onChange={(e) => setFormData({ ...formData, agreeTerms: e.target.checked })}
-                    className="w-5 h-5 text-sky-600 border-gray-300 rounded focus:ring-sky-500 mt-1"
+                    className="w-5 h-5 accent-sky-600 mt-1 flex-shrink-0"
                     required
                     disabled={isSubmitting}
                   />
                   <div>
-                    <label htmlFor="agreeTerms" className="text-sm text-sky-800 font-medium">
+                    <label htmlFor="agreeTerms" className="text-sm text-sky-800 font-semibold">
                       {isSpanish ? 'Acepto los términos' : 'Concordo com os termos'} <span className="text-red-500">*</span>
                     </label>
                     <p className="text-sm text-sky-700 mt-2 text-justified">
-                      <strong>{isSpanish ? 'AVISO:' : 'AVISO:'}</strong> {isSpanish ? 'Acepta los términos del Estatuto Social de la entidad y el pago de la cuota de adhesión para socio efectivo, quedando exento de las cuotas de entrada mientras sea cliente o prestador de servicios de la AI, para poder beneficiarse de las ventajas, servicios y valores aplicados en la tabla de valores mínimos de la entidad.' : 'Concorda com os termos do Estatuto Social da entidade e com o pagamento da taxa de adesão para associado efetivo, estando isento das jóias enquanto cliente ou prestador de serviços junto à AI, para fazer jus aos benefícios, serviços e valores aplicados na tabela de valores mínimos da entidade.'}
+                      <strong>AVISO:</strong> {isSpanish ? 'Acepta los términos del Estatuto Social de la entidad y el pago de la cuota de adhesión para socio efectivo, quedando exento de las cuotas de entrada mientras sea cliente o prestador de servicios de la AI, para poder beneficiarse de las ventajas, servicios y valores aplicados en la tabla de valores mínimos de la entidad.' : 'Concorda com os termos do Estatuto Social da entidade e com o pagamento da taxa de adesão para associado efetivo, estando isento das jóias enquanto cliente ou prestador de serviços junto à AI, para fazer jus aos benefícios, serviços e valores aplicados na tabela de valores mínimos da entidade.'}
                     </p>
                   </div>
                 </div>
@@ -1365,7 +1359,7 @@ function JoinPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-sky-600 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:bg-sky-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-sky-600 text-white py-4 px-6 rounded-xl font-bold text-lg hover:bg-sky-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? (isSpanish ? 'Enviando...' : 'Enviando...') : (isSpanish ? 'Enviar Formulario de Asociación' : 'Enviar Formulário de Associação')}
               </button>
