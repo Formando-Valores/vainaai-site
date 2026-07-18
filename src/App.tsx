@@ -1088,7 +1088,7 @@ function JoinPage() {
                     type="text"
                     value={formData.fullName}
                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-gray-900"
                     required
                     disabled={isSubmitting}
                   />
@@ -1103,7 +1103,7 @@ function JoinPage() {
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-gray-900"
                     required
                     disabled={isSubmitting}
                   />
@@ -1120,7 +1120,7 @@ function JoinPage() {
                     onChange={(e) => handlePasswordChange(e.target.value)}
                     onFocus={() => setPasswordTouched(true)}
                     onBlur={() => { if (!formData.password) setPasswordTouched(false); }}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-gray-900"
                     required
                     disabled={isSubmitting}
                   />
@@ -1143,7 +1143,7 @@ function JoinPage() {
                     type="password"
                     value={formData.confirmPassword}
                     onChange={(e) => handleConfirmChange(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-gray-900"
                     required
                     disabled={isSubmitting}
                   />
@@ -1162,7 +1162,7 @@ function JoinPage() {
                   <select
                     value={formData.documentType}
                     onChange={(e) => setFormData({ ...formData, documentType: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-gray-900"
                     disabled={isSubmitting}
                   >
                     <option value="">{isSpanish ? 'Seleccione el tipo' : 'Selecione o tipo'}</option>
@@ -1181,7 +1181,7 @@ function JoinPage() {
                     type="text"
                     value={formData.documentNumber}
                     onChange={(e) => setFormData({ ...formData, documentNumber: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-gray-900"
                     disabled={isSubmitting}
                   />
                 </div>
@@ -1193,7 +1193,7 @@ function JoinPage() {
                     type="text"
                     value={formData.nif}
                     onChange={(e) => setFormData({ ...formData, nif: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-gray-900"
                     disabled={isSubmitting}
                   />
                 </div>
@@ -1207,7 +1207,7 @@ function JoinPage() {
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-gray-900"
                     placeholder="+351 XXX XXX XXX"
                     disabled={isSubmitting}
                   />
@@ -1221,7 +1221,7 @@ function JoinPage() {
                   <select
                     value={formData.maritalStatus}
                     onChange={(e) => setFormData({ ...formData, maritalStatus: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-gray-900"
                     disabled={isSubmitting}
                   >
                     <option value="">{isSpanish ? 'Seleccione' : 'Selecione'}</option>
@@ -1241,7 +1241,7 @@ function JoinPage() {
                     type="text"
                     value={formData.country}
                     onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-gray-900"
                     disabled={isSubmitting}
                   />
                 </div>
@@ -1255,7 +1255,7 @@ function JoinPage() {
                     type="text"
                     value={formData.address}
                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-gray-900"
                     placeholder={isSpanish ? 'Calle, número, piso...' : 'Rua, número, andar...'}
                     disabled={isSubmitting}
                   />
@@ -1270,7 +1270,7 @@ function JoinPage() {
                     type="text"
                     value={formData.postalCode}
                     onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-gray-900"
                     placeholder="0000-000"
                     disabled={isSubmitting}
                   />
@@ -1285,7 +1285,7 @@ function JoinPage() {
                     type="text"
                     value={formData.profession}
                     onChange={(e) => setFormData({ ...formData, profession: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-gray-900"
                     disabled={isSubmitting}
                   />
                 </div>
@@ -1299,7 +1299,7 @@ function JoinPage() {
                     type="text"
                     value={formData.nationality}
                     onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-gray-900"
                     disabled={isSubmitting}
                   />
                 </div>
@@ -1446,7 +1446,7 @@ function ReportPage() {
               <select
                 value={formData.type}
                 onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-gray-900"
                 required
                 disabled={isSubmitting}
               >
@@ -1467,7 +1467,7 @@ function ReportPage() {
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows={6}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-gray-900"
                 placeholder={isSpanish ? 'Describa la situación con el mayor detalle posible...' : 'Descreva a situação com o máximo de detalhes possível...'}
                 required
                 disabled={isSubmitting}
@@ -1482,7 +1482,7 @@ function ReportPage() {
                 type="text"
                 value={formData.location}
                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-gray-900"
                 placeholder={isSpanish ? 'Ciudad, barrio, institución...' : 'Cidade, bairro, instituição...'}
                 required
                 disabled={isSubmitting}
@@ -1532,7 +1532,7 @@ function ReportPage() {
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-gray-900"
                   placeholder="+351 XXX XXX XXX"
                   required={!formData.anonymous}
                   disabled={isSubmitting}
