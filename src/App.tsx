@@ -1002,6 +1002,7 @@ function JoinPage() {
       org_id: orgId,
       role: 'Cliente',
       unit: formData.serviceUnit,
+      source: 'vainaai',
       documentId: formData.documentNumber || '',
       taxId: formData.nif || '',
       phone: formData.phone || '',
