@@ -1071,12 +1071,6 @@ function JoinPage() {
               </p>
             </div>
 
-            {formMessage && (
-              <div className={`mb-6 px-4 py-3 rounded-lg text-sm font-semibold ${formMessage.ok ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
-                {formMessage.text}
-              </div>
-            )}
-
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Nome Completo - full width */}
@@ -1399,6 +1393,12 @@ function JoinPage() {
               >
                 {isSubmitting ? (isSpanish ? 'Enviando...' : 'Enviando...') : (isSpanish ? 'Enviar Formulario de Asociación' : 'Enviar Formulário de Associação')}
               </button>
+
+              {formMessage && (
+                <div className={`mt-4 px-4 py-3 rounded-lg text-sm font-semibold ${formMessage.ok ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+                  {formMessage.text}
+                </div>
+              )}
             </form>
         </div>
       </div>
