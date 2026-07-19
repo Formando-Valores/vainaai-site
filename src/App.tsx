@@ -937,6 +937,8 @@ function JoinPage() {
     serviceUnit: 'JURÍDICO / ADVOCACIA',
     profession: '',
     nationality: '',
+    processTitle: '',
+    organizationRequestedName: '',
     agreeTerms: false
   });
   const [passwordRules, setPasswordRules] = useState({ length: false, upper: false, number: false, special: false });
@@ -989,15 +991,9 @@ function JoinPage() {
     setIsSubmitting(true);
     setFormMessage({ text: isSpanish ? 'Enviando su registro...' : 'A enviar o seu cadastro...', ok: true });
 
-    const supabaseUrl = (import.meta.env.VITE_SGI_FV_SUPABASE_URL || '').replace(/\/$/, '');
-    const anonKey = import.meta.env.VITE_SGI_FV_ANON_KEY || '';
+    const supabaseUrl = (import.meta.env.VITE_SGI_FV_SUPABASE_URL || 'https://ktrrrqaqaljdcmxqdcff.supabase.co').replace(/\/$/, '');
+    const anonKey = import.meta.env.VITE_SGI_FV_ANON_KEY || 'sb_publishable_ZcEU2_K18A4NU43hO4zPmA_N5SkuqO_';
     const orgId = import.meta.env.VITE_SGI_FV_ORG_ID || 'd535afe4-6279-40a9-aaa9-f5a7f6ee4825';
-
-    if (!supabaseUrl || !anonKey) {
-      setFormMessage({ text: isSpanish ? 'Error de configuración. Contacte al administrador.' : 'Erro de configuração. Contacte o administrador.', ok: false });
-      setIsSubmitting(false);
-      return;
-    }
 
     const payload = {
       email: formData.email,
@@ -1006,6 +1002,14 @@ function JoinPage() {
       org_id: orgId,
       role: 'Cliente',
       unit: formData.serviceUnit,
+      documentId: formData.documentNumber || '',
+      taxId: formData.nif || '',
+      phone: formData.phone || '',
+      maritalStatus: formData.maritalStatus || 'Solteiro',
+      country: formData.country || 'Portugal',
+      address: formData.address || '',
+      processTitle: formData.processTitle || 'Filiação - ' + (formData.fullName || ''),
+      organizationRequestedName: formData.organizationRequestedName || 'Associação contra as Injustiças - AI',
     };
 
     try {
@@ -1030,7 +1034,8 @@ function JoinPage() {
         fullName: '', email: '', password: '', confirmPassword: '',
         documentType: '', documentNumber: '', nif: '', phone: '',
         maritalStatus: '', country: 'Portugal', address: '', postalCode: '',
-        serviceUnit: 'JURÍDICO / ADVOCACIA', profession: '', nationality: '', agreeTerms: false,
+        serviceUnit: 'JURÍDICO / ADVOCACIA', profession: '', nationality: '',
+        processTitle: '', organizationRequestedName: '', agreeTerms: false,
       });
       setPasswordRules({ length: false, upper: false, number: false, special: false });
       setPasswordTouched(false);
@@ -1297,6 +1302,36 @@ function JoinPage() {
                     disabled={isSubmitting}
                   />
                 </div>
+
+                {/* Título do Processo */}
+                <div>
+                  <label className="block text-sm font-medium text-sky-700 mb-2">
+                    {isSpanish ? 'Título del Proceso (opcional)' : 'Título do Processo (opcional)'}
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.processTitle}
+                    onChange={(e) => setFormData({ ...formData, processTitle: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-gray-900"
+                    placeholder={isSpanish ? 'Ej.: Solicitud inicial' : 'Ex.: Solicitação inicial'}
+                    disabled={isSubmitting}
+                  />
+                </div>
+              </div>
+
+              {/* Nome da Organização - full width */}
+              <div>
+                <label className="block text-sm font-medium text-sky-700 mb-2">
+                  {isSpanish ? 'Nombre de la organización para registro futuro' : 'Nome da organização para cadastro futuro'}
+                </label>
+                <input
+                  type="text"
+                  value={formData.organizationRequestedName}
+                  onChange={(e) => setFormData({ ...formData, organizationRequestedName: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-gray-900"
+                  placeholder={isSpanish ? 'Ej.: Asociación XPTO' : 'Ex.: Associação XPTO'}
+                  disabled={isSubmitting}
+                />
               </div>
 
               {/* Área de Atendimento - full width */}
