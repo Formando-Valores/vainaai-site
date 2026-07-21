@@ -925,23 +925,14 @@ function JoinPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <PageHeader title={isSpanish ? 'Hazte Socio' : 'Associe-se'} subtitle={isSpanish ? 'Únase a nuestra causa y marque la diferencia' : 'Junte-se à nossa causa e faça a diferença'} />
 
-        <div className="surface-card p-8">
-            <div className="mb-8 text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <UserPlus className="w-8 h-8 text-green-600" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">{isSpanish ? 'Formulario de Asociación' : 'Formulário de Associação'}</h2>
-              <p className="text-sky-600 mb-6 text-justified">
-                {isSpanish ? 'Rellene el siguiente formulario para hacerse miembro de AI - Asociación contra las Injusticias.' : 'Preencha o formulário abaixo para se tornar membro da AI - Associação contra as Injustiças.'}
-              </p>
-            </div>
-
+        <div className="rounded-2xl overflow-hidden shadow-lg shadow-sky-500/5">
             <iframe
               src="https://sgi-fv-prod.vercel.app/associate.html?org_id=d535afe4-6279-40a9-aaa9-f5a7f6ee4825&source=vainaai&site=VAINAAI"
               width="100%"
               height={900}
-              style={{ border: 'none', maxWidth: '820px', display: 'block', margin: '0 auto' }}
+              style={{ border: 'none', display: 'block' }}
               title={isSpanish ? 'Formulario de Asociación' : 'Formulário de Associação'}
+              loading="lazy"
             />
         </div>
       </div>
