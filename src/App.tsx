@@ -600,12 +600,12 @@ function PrivacyPage() {
 
 // ===== Estatuto Viewer (read-only PDF viewer) =====
 type PDFLib = typeof import("pdfjs-dist");
-type PDFDocumentProxy = Awaited<ReturnType<PDFLib["getDocument"]>>["promise"];
+type PDFDocumentLoadingTask = ReturnType<PDFLib["getDocument"]>;
 
 function EstatutoViewer({ onClose }: { onClose: () => void }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const docRef = useRef<PDFDocumentProxy | null>(null);
-  const pdfLibRef = useRef<PDFLib | null>(null);
+  const docRef = useRef<Awaited<ReturnType<PDFDocumentLoadingTask["promise"]>> | null>(null);
+  const loadingTaskRef = useRef<PDFDocumentLoadingTask | null>(null);
   const [pageNum, setPageNum] = useState(1);
   const [numPages, setNumPages] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -621,11 +621,12 @@ function EstatutoViewer({ onClose }: { onClose: () => void }) {
           import("pdfjs-dist/build/pdf.worker.min.mjs?url"),
         ]);
         pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerModule.default;
-        pdfLibRef.current = pdfjsLib;
 
-        const pdf = await pdfjsLib.getDocument({ url: estatutoUrl }).promise;
+        const loadingTask = pdfjsLib.getDocument({ url: estatutoUrl });
+        loadingTaskRef.current = loadingTask;
+        const pdf = await loadingTask.promise;
         if (cancelled) {
-          pdf.destroy();
+          loadingTask.destroy();
           return;
         }
         docRef.current = pdf;
@@ -643,8 +644,18 @@ function EstatutoViewer({ onClose }: { onClose: () => void }) {
 
     return () => {
       cancelled = true;
-      docRef.current?.destroy();
+      try {
+        loadingTaskRef.current?.destroy();
+      } catch {
+        // ignore
+      }
+      loadingTaskRef.current = null;
       docRef.current = null;
+      const canvas = canvasRef.current;
+      if (canvas) {
+        canvas.width = 0;
+        canvas.height = 0;
+      }
     };
   }, []);
 
@@ -670,7 +681,11 @@ function EstatutoViewer({ onClose }: { onClose: () => void }) {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, viewport.width, viewport.height);
 
-      await page.render({ canvasContext: ctx, viewport, canvas }).promise;
+      try {
+        await page.render({ canvasContext: ctx, viewport, canvas }).promise;
+      } catch {
+        // render interrompido (documento destruído) — ignorar
+      }
     };
 
     render();
