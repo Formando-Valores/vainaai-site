@@ -1,4 +1,9 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+
+import { submitForm } from "./lib/api";
+import { Toaster, toast } from "sonner";
+import 'animate.css';
+import estatutoUrl from "./assets/estatuto-social.pdf?url";
 
 import { submitForm } from "./lib/api";
 import { Toaster, toast } from "sonner";
@@ -39,7 +44,11 @@ import {
   Laptop,
   HardHat,
   Users2,
-  PiggyBank
+  PiggyBank,
+  FileText,
+  X,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
@@ -314,6 +323,10 @@ export default function App() {
                   <Phone className="w-4 h-4" />
                   <span>+351 916 068 515</span>
                 </div>
+                <div className="flex items-center space-x-2">
+                  <Phone className="w-4 h-4" />
+                  <span>+351 935 362 089</span>
+                </div>
               </div>
             </div>
           </div>
@@ -585,10 +598,189 @@ function PrivacyPage() {
   );
 }
 
+// ===== Estatuto Viewer (read-only PDF viewer) =====
+type PDFLib = typeof import("pdfjs-dist");
+type PDFDocumentProxy = Awaited<ReturnType<PDFLib["getDocument"]>>["promise"];
+
+function EstatutoViewer({ onClose }: { onClose: () => void }) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const docRef = useRef<PDFDocumentProxy | null>(null);
+  const pdfLibRef = useRef<PDFLib | null>(null);
+  const [pageNum, setPageNum] = useState(1);
+  const [numPages, setNumPages] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      try {
+        const [pdfjsLib, pdfWorkerModule] = await Promise.all([
+          import("pdfjs-dist"),
+          import("pdfjs-dist/build/pdf.worker.min.mjs?url"),
+        ]);
+        pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerModule.default;
+        pdfLibRef.current = pdfjsLib;
+
+        const pdf = await pdfjsLib.getDocument({ url: estatutoUrl }).promise;
+        if (cancelled) {
+          pdf.destroy();
+          return;
+        }
+        docRef.current = pdf;
+        setNumPages(pdf.numPages);
+        setLoading(false);
+      } catch {
+        if (!cancelled) {
+          setError(true);
+          setLoading(false);
+        }
+      }
+    };
+
+    load();
+
+    return () => {
+      cancelled = true;
+      docRef.current?.destroy();
+      docRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!docRef.current || loading || error) return;
+
+    let cancelled = false;
+
+    const render = async () => {
+      const pdf = docRef.current!;
+      const page = await pdf.getPage(pageNum);
+      if (cancelled) return;
+
+      const viewport = page.getViewport({ scale: 1.5 });
+      const canvas = canvasRef.current!;
+      const ctx = canvas.getContext("2d")!;
+      const dpr = window.devicePixelRatio || 1;
+
+      canvas.width = Math.floor(viewport.width * dpr);
+      canvas.height = Math.floor(viewport.height * dpr);
+      canvas.style.width = `${viewport.width}px`;
+      canvas.style.height = `${viewport.height}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, viewport.width, viewport.height);
+
+      await page.render({ canvasContext: ctx, viewport, canvas }).promise;
+    };
+
+    render();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [pageNum, loading, error]);
+
+  useEffect(() => {
+    const preventShortcuts = (event: KeyboardEvent) => {
+      const key = event.key.toLowerCase();
+      if (event.ctrlKey && (key === 's' || key === 'p' || key === 'c')) {
+        event.preventDefault();
+      }
+    };
+
+    document.addEventListener('keydown', preventShortcuts);
+
+    return () => {
+      document.removeEventListener('keydown', preventShortcuts);
+    };
+  }, []);
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+      onClick={onClose}
+      onContextMenu={(event) => event.preventDefault()}
+      onDragStart={(event) => event.preventDefault()}
+      onCopy={(event) => event.preventDefault()}
+    >
+      <div
+        className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-white/10 bg-[#0f1725] shadow-2xl"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
+          <h3 className="text-lg font-semibold text-slate-100">Estatuto Social</h3>
+          <div className="flex items-center space-x-3">
+            {!loading && !error && (
+              <span className="text-sm text-slate-400">Página {pageNum} de {numPages}</span>
+            )}
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Fechar Estatuto Social"
+              className="flex h-9 w-9 items-center justify-center rounded-full text-slate-300 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+
+        <div className="relative flex-1 overflow-auto bg-slate-900 select-none" onContextMenu={(event) => event.preventDefault()}>
+          {loading && (
+            <div className="flex h-full min-h-[300px] items-center justify-center">
+              <p className="text-slate-400">A carregar Estatuto Social…</p>
+            </div>
+          )}
+
+          {error && (
+            <div className="flex h-full min-h-[300px] items-center justify-center">
+              <p className="text-red-400">Não foi possível carregar o documento.</p>
+            </div>
+          )}
+
+          {!loading && !error && (
+            <div className="flex min-h-full items-center justify-center p-4">
+              <canvas
+                ref={canvasRef}
+                className="max-w-full shadow-lg select-none"
+                onContextMenu={(event) => event.preventDefault()}
+                onDragStart={(event) => event.preventDefault()}
+              />
+            </div>
+          )}
+        </div>
+
+        {!loading && !error && (
+          <div className="flex items-center justify-between border-t border-white/10 px-5 py-3">
+            <button
+              type="button"
+              disabled={pageNum <= 1}
+              onClick={() => setPageNum((p) => Math.max(1, p - 1))}
+              className="flex items-center space-x-1 rounded-lg px-3 py-2 text-sm text-slate-300 transition-colors hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              <span>Anterior</span>
+            </button>
+            <button
+              type="button"
+              disabled={pageNum >= numPages}
+              onClick={() => setPageNum((p) => Math.min(numPages, p + 1))}
+              className="flex items-center space-x-1 rounded-lg px-3 py-2 text-sm text-slate-300 transition-colors hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <span>Seguinte</span>
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ===== Page: About =====
 function AboutPage() {
   const { locale } = useLanguage();
   const isSpanish = locale === 'es';
+  const [showEstatuto, setShowEstatuto] = useState(false);
 
   return (
     <div className="py-16">
@@ -639,7 +831,23 @@ function AboutPage() {
                 <h3 className="font-semibold text-sky-800">{isSpanish ? 'Accesibilidad' : 'Acessibilidade'}</h3>
               </div>
             </div>
+
+            <div className="mt-6 text-center">
+              <button
+                type="button"
+                onClick={() => setShowEstatuto(true)}
+                className="inline-flex items-center space-x-2 rounded-lg border border-sky-600 bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-sky-700"
+              >
+                <FileText className="h-4 w-4" />
+                <span>{isSpanish ? 'Ver Estatutos' : 'Ver Estatuto Social'}</span>
+              </button>
+              <p className="mt-2 text-xs text-sky-700">
+                {isSpanish ? 'Documento disponible solo para lectura.' : 'Documento disponível apenas para leitura.'}
+              </p>
+            </div>
           </div>
+
+          {showEstatuto && <EstatutoViewer onClose={() => setShowEstatuto(false)} />}
         </div>
       </div>
     </div>
